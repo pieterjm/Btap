@@ -1,212 +1,319 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <esp32_smartdisplay.h>
+#include "plebtap.h"
+#include "ui.h"
 #include <ESP32Servo.h>
+#include <WebSocketsClient.h>
+#include <LittleFS.h>
+#include <ArduinoJson.h>
 
-#define BUTTON_HEIGHT 80
-#define BUTTON_MARGIN 12
-#define BUTTON_WIDTH  90
+// config variables
+int config_servo_back = 10;
+int config_servo_close = 20;
+int config_servo_open = 30;
+String config_wifi_ssid = "";
+String config_wifi_pwd = "";
+String config_wsurl = "wss://lnbits.meulenhoff.org/api/v1/ws/CuEgAhrWog5hw4BgdBjqUP";
+int config_tap_duration = 5000;
+int config_clean_duration = 3000;
 
-int grad1 = 0;
-int grad2 = 90;
-int grad3 = 180;
-
-static lv_obj_t *label1_2;
-static lv_obj_t *label2_2;
-static lv_obj_t *label3_2;
-
-// LVGL Objects
-static lv_obj_t *bier_image;
+// two booleans to pass instructions to the main loop
+bool bWiFiReconnect = true;
+bool bWebSocketReconnect = false;
+String config_wshost = "";
+String config_wspath = "";
 
 Servo servo;
+WebSocketsClient webSocket;
 
-void display_update()
-{
+// defines for the config file
+#define PLEBTAP_CFG_SSID "ssid"
+#define PLEBTAP_CFG_WIFIPASS "wifipassword"
+#define PLEBTAP_CFG_SERVO_BACK "servoback"
+#define PLEBTAP_CFG_SERVO_CLOSE "servoclose"
+#define PLEBTAP_CFG_SERVO_OPEN "servoopen"
+#define PLEBTAP_CFG_WSURL "websocket"
+#define PLEBTAP_CFG_TAP_DURATION "tapduration"
+#define PLEBTAP_CFG_CLEAN_DURATION "cleanduration"
+
+int restrictToBoundary(int angle) {
+  if ( angle < 0 ) {
+    return 0;
+  }
+  if ( angle > 180 ) {
+    return 180;
+  }
+  return angle;
 }
 
-void btn_event_cb(lv_event_t *e)
-{
-  const std::lock_guard<std::recursive_mutex> lock(lvgl_mutex);
-
-  Serial.println("event");
-
-  auto code = lv_event_get_code(e);
-  auto btn = lv_event_get_target(e);
-  
-  if (code == LV_EVENT_CLICKED)
-  {
-    servo.write(0);
+int changeAngle(int where, int value) {
+  switch ( where ) {
+    case PLEBTAP_SERVO_BACK:
+      config_servo_back += value;
+      config_servo_back = restrictToBoundary(config_servo_back);
+      saveConfig();
+      return config_servo_back;
+    case PLEBTAP_SERVO_CLOSE:
+      config_servo_close += value;
+      config_servo_close = restrictToBoundary(config_servo_close);
+      saveConfig();
+      return config_servo_close;
+    case PLEBTAP_SERVO_OPEN:
+      config_servo_open += value;
+      config_servo_open = restrictToBoundary(config_servo_open);
+      saveConfig();
+      return config_servo_open;
+    default:
+      return 0;
   }
 }
 
-void btn_event_cb_minus(lv_event_t *e)
-{
-  const std::lock_guard<std::recursive_mutex> lock(lvgl_mutex);
-  auto code = lv_event_get_code(e);
-  auto btn = lv_event_get_target(e);
-  int *grad = (int *)lv_event_get_user_data(e);
+void moveServo(int where) {
+  switch (where ) {
+    case PLEBTAP_SERVO_BACK:
+      servo.write(config_servo_back);
+      break; 
+   case PLEBTAP_SERVO_CLOSE:
+      servo.write(config_servo_close);
+      break;
+    case PLEBTAP_SERVO_OPEN:
+      servo.write(config_servo_open);
+      break;
+    default:
+      break;
+  }
+}
 
-  if (code == LV_EVENT_CLICKED)
-  {
-    if ( *grad > 0 ) {
-      (*grad) -= 1;
-      lv_label_set_text_fmt(label1_2, "%d",grad1);
-      lv_label_set_text_fmt(label2_2, "%d",grad2);
-      lv_label_set_text_fmt(label3_2, "%d",grad3);
+void beerClose() {
+  moveServo(PLEBTAP_SERVO_CLOSE);
+}
+
+void beerOpen() {
+  moveServo(PLEBTAP_SERVO_OPEN);
+}
+
+void beerBack() {
+  moveServo(PLEBTAP_SERVO_BACK);
+}
+
+void setWifiCredentials(const char *ssid,const char *pwd) {
+  config_wifi_ssid = String(ssid);
+  config_wifi_pwd = String(pwd);
+  bWiFiReconnect = true;
+  saveConfig();
+}
+
+bool getWifiStatus() {
+  if ( WiFi.status() == WL_CONNECTED ) {
+    return true;
+  } 
+  return false;
+}
+
+bool getWebSocketStatus() {
+  return webSocket.isConnected();
+}
+
+void beerTimerFinished(lv_timer_t * timer)
+{
+  beerClose();
+  bool bConfig = (bool)timer->user_data;
+  lv_timer_del(timer);
+  if ( bConfig ) {
+    lv_disp_load_scr(ui_ScreenConfig);	
+  } else {
+    lv_disp_load_scr(ui_ScreenMain);	  
+  }
+} 
+
+void beer(bool bConfig)
+{
+  static uint32_t user_data = bConfig ? 1 : 0;
+	lv_disp_load_scr(ui_ScreenBierFlowing);	
+	lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_tap_duration, (void *)bConfig);
+	beerOpen();    
+}
+
+void clean(bool bConfig)
+{
+  lv_disp_load_scr(ui_ScreenBierFlowing);	
+  lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_clean_duration, (void *)bConfig);
+	beerOpen();    
+}
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+      Serial.println("WebSocket disconnected");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("WebSocket Connected");
+      webSocket.sendTXT("Connected");
+      break;
+    case WStype_TEXT:
+      Serial.println("Beer via WebSocket");
+      beer(false);
+      break;
+    default:
+			break;
+  }
+}
+
+void myDelay(uint32_t ms) {
+  delay(ms);
+}
+
+void loadConfig() {
+  Serial.println("Loading config");
+
+  File file = LittleFS.open("/config.json", "r");
+  if (!file) {
+    Serial.println("No config file /config.json");
+    return;
+  }
+
+  StaticJsonDocument<2000> doc;
+  String content = file.readString();
+  DeserializationError error = deserializeJson(doc, content);
+  file.close();
+
+  if ( error.code() !=  DeserializationError::Ok ) {
+    Serial.println("Serialisation error");
+    return;     
+  }
+
+  JsonArray arr = doc.as<JsonArray>();
+  for (JsonObject obj: arr) {
+    String name = obj["name"];
+    String value = obj["value"];
+    Serial.print("Name: ");
+    Serial.println(name);
+
+    if ( name == PLEBTAP_CFG_SSID ) {
+      config_wifi_ssid = String(value);
+      Serial.print("Wi-Fi SSID: ");
+      Serial.println(config_wifi_ssid);
+    } else if ( name == PLEBTAP_CFG_WIFIPASS ) {
+      config_wifi_pwd = String(value);
+    } else if ( name  == PLEBTAP_CFG_WSURL ) {
+      // convert to string object
+      config_wsurl = value;
+      String wsstr = value;
+
+      // check prefixes
+      if ( wsstr.startsWith("ws://") ) {
+        wsstr = wsstr.substring(5);
+      } else if ( wsstr.startsWith("wss://") ) {
+        wsstr = wsstr.substring(6);
+      } else {
+        Serial.println("Incorrect websocket URL");
+        continue;
+      }
+
+      int index = wsstr.indexOf('/');
+      if ( index == -1 ) {
+        Serial.println("No host in WebSocket URL");
+        continue;
+      }
+      config_wshost = wsstr.substring(0,index);
+      config_wspath = wsstr.substring(index);
+
+      Serial.print("WebSocket host: ");
+      Serial.println(config_wshost);
+      Serial.print("WebSocket path: ");
+      Serial.println(config_wspath);
+    } else if ( name == PLEBTAP_CFG_SERVO_CLOSE ) {
+      config_servo_close = String(value).toInt();
+    } else if ( name == PLEBTAP_CFG_SERVO_OPEN ) {
+      config_servo_open = String(value).toInt();
+    } else if ( name == PLEBTAP_CFG_SERVO_BACK ) {
+      config_servo_back = String(value).toInt();
+    } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
+      config_tap_duration = String(value).toInt();
+    } else if ( name == PLEBTAP_CFG_CLEAN_DURATION ) {
+      config_clean_duration = String(value).toInt();      
     }
   }
 }
 
-void btn_event_cb_plus(lv_event_t *e)
-{
-  const std::lock_guard<std::recursive_mutex> lock(lvgl_mutex);
-  auto code = lv_event_get_code(e);
-  auto btn = lv_event_get_target(e);
-  int *grad = (int *)lv_event_get_user_data(e);
-
-  if (code == LV_EVENT_CLICKED)
-  {
-    if ( *grad < 180 ) {
-      (*grad) += 1;  
-      lv_label_set_text_fmt(label1_2, "%d",grad1);
-      lv_label_set_text_fmt(label2_2, "%d",grad2);
-      lv_label_set_text_fmt(label3_2, "%d",grad3);
-    }
+void saveConfig() {
+  File file = LittleFS.open("/config.json", "w");
+  if (!file) {
+    return;
   }
-}
 
-void btn_event_cb_servo(lv_event_t *e)
-{
-  const std::lock_guard<std::recursive_mutex> lock(lvgl_mutex);
-  auto code = lv_event_get_code(e);
-  auto btn = lv_event_get_target(e);
-  int *grad = (int *)lv_event_get_user_data(e);
-
-  if (code == LV_EVENT_CLICKED)
-  {
-    servo.write(*grad);
-  }
-}
-
-void mainscreen()
-{
-  const std::lock_guard<std::recursive_mutex> lock(lvgl_mutex);
-
-  // Clear screen
-  lv_obj_clean(lv_scr_act());
-
+  StaticJsonDocument<2000> doc;
   
-  // minus first row
-  auto btn1_1 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn1_1, BUTTON_MARGIN, BUTTON_MARGIN);
-  lv_obj_set_size(btn1_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn1_1, btn_event_cb_minus, LV_EVENT_CLICKED, &grad1);
-  auto label1_1 = lv_label_create(btn1_1);
-  lv_label_set_text_static(label1_1, "-");
-  lv_obj_center(label1_1);
+  doc[0]["name"] = PLEBTAP_CFG_SSID;
+  doc[0]["value"] = config_wifi_ssid;    
+  doc[1]["name"] = PLEBTAP_CFG_WIFIPASS;
+  doc[1]["value"]= config_wifi_pwd;
+  doc[2]["name"] = PLEBTAP_CFG_SERVO_BACK;
+  doc[2]["value"] = config_servo_back;
+  doc[3]["name"] = PLEBTAP_CFG_SERVO_CLOSE;
+  doc[3]["value"] = config_servo_close;
+  doc[4]["name"] = PLEBTAP_CFG_SERVO_OPEN;
+  doc[4]["value"] = config_servo_open;
+  doc[5]["name"] = PLEBTAP_CFG_TAP_DURATION;
+  doc[5]["value"] = config_tap_duration;
+  doc[6]["name"] = PLEBTAP_CFG_CLEAN_DURATION;
+  doc[6]["value"] = config_clean_duration;
+  doc[7]["name"] = PLEBTAP_CFG_WSURL;
+  doc[7]["value"] = config_wsurl;
 
-  // gradient button
-  auto btn1_2 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn1_2, 2 * BUTTON_MARGIN + BUTTON_WIDTH, BUTTON_MARGIN);
-  lv_obj_set_size(btn1_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn1_2, btn_event_cb_servo, LV_EVENT_CLICKED, &grad1);
-  label1_2 = lv_label_create(btn1_2);
-  lv_label_set_text_fmt(label1_2, "%d",grad1);
-  lv_obj_center(label1_2);
+  String output = "";
+  serializeJson(doc, output);
+  Serial.println(output);
 
-  // plus button
-  auto btn1_3 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn1_3, 3 * BUTTON_MARGIN + 2 * BUTTON_WIDTH, BUTTON_MARGIN);
-  lv_obj_set_size(btn1_3, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn1_3, btn_event_cb_plus, LV_EVENT_CLICKED, &grad1);
-  auto label1_3 = lv_label_create(btn1_3);
-  lv_label_set_text_static(label1_3, "+");
-  lv_obj_center(label1_3);
+  serializeJson(doc, file);
+    
 
-  // row 2
-
-  // Create a button
-  auto btn2_1 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn2_1, BUTTON_MARGIN, 2 * BUTTON_MARGIN + BUTTON_HEIGHT);
-  lv_obj_set_size(btn2_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn2_1, btn_event_cb_minus, LV_EVENT_CLICKED, &grad2);
-  auto label2_1 = lv_label_create(btn2_1);
-  lv_label_set_text_static(label2_1, "-");
-  lv_obj_center(label2_1);
-
-  // gradient button
-  auto btn2_2 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn2_2, 2 * BUTTON_MARGIN + BUTTON_WIDTH, 2 * BUTTON_MARGIN + 1 * BUTTON_HEIGHT);
-  lv_obj_set_size(btn2_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn2_2, btn_event_cb_servo, LV_EVENT_CLICKED, &grad2);
-  label2_2 = lv_label_create(btn2_2);
-  lv_label_set_text_fmt(label2_2, "%d",grad2);
-  lv_obj_center(label2_2);
-
-  // plus button
-  auto btn2_3 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn2_3, 3 * BUTTON_MARGIN + 2 * BUTTON_WIDTH, 2 * BUTTON_MARGIN + 1 * BUTTON_HEIGHT);
-  lv_obj_set_size(btn2_3, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn2_3, btn_event_cb_plus, LV_EVENT_CLICKED, &grad2);
-  auto label2_3 = lv_label_create(btn2_3);
-  lv_label_set_text_static(label2_3, "+");
-  lv_obj_center(label2_3);
-
-  // row 3
-
-  // minus button
-  auto btn3_1 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn3_1, BUTTON_MARGIN, 3 * BUTTON_MARGIN + 2 * BUTTON_HEIGHT);
-  lv_obj_set_size(btn3_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn3_1, btn_event_cb_minus, LV_EVENT_CLICKED, &grad3);
-  auto label3_1 = lv_label_create(btn3_1);
-  lv_label_set_text_static(label3_1, "-");
-  lv_obj_center(label3_1);
-
-  // gradient button
-  auto btn3_2 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn3_2, 2 * BUTTON_MARGIN + BUTTON_WIDTH, 3 * BUTTON_MARGIN + 2 * BUTTON_HEIGHT);
-  lv_obj_set_size(btn3_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn3_2, btn_event_cb_servo, LV_EVENT_CLICKED, &grad3);
-  label3_2 = lv_label_create(btn3_2);
-  lv_label_set_text_fmt(label3_2, "%d", grad3);
-  lv_obj_center(label3_2);
-
-  // plus button
-  auto btn3_3 = lv_btn_create(lv_scr_act());
-  lv_obj_set_pos(btn3_3, 3 * BUTTON_MARGIN + 2 * BUTTON_WIDTH, 3 * BUTTON_MARGIN + 2 * BUTTON_HEIGHT);
-  lv_obj_set_size(btn3_3, BUTTON_WIDTH, BUTTON_HEIGHT);
-  lv_obj_add_event_cb(btn3_3, btn_event_cb_plus, LV_EVENT_CLICKED, &grad3);
-  auto label3_3 = lv_label_create(btn3_3);
-  lv_label_set_text_static(label3_3, "+");
-  lv_obj_center(label3_3);
-
- 
+  file.close();
 }
 
 void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  delay(2000);
+
+  LittleFS.begin(true);
+
 
   smartdisplay_init();
+  ui_init();
+
+  // set UI components from config
+  loadConfig();
+
+  lv_label_set_text_fmt(ui_LabelConfigBackServo,"%d",config_servo_back);
+  lv_label_set_text_fmt(ui_LabelConfigCloseServo,"%d",config_servo_close);
+  lv_label_set_text_fmt(ui_LabelConfigOpenServo,"%d",config_servo_open);
+  lv_textarea_set_text(ui_TextAreaConfigSSID,config_wifi_ssid.c_str());
+  lv_textarea_set_text(ui_TextAreaWifiPassword,config_wifi_pwd.c_str());
 
 
-  servo.attach(21);
-  //WiFi.begin();
-
-  // Set the time servers
-  //configTime(0, 0, "pool.ntp.org");
-
-  mainscreen();
+  servo.attach(PLEBTAP_SERVO_PIN);
+  webSocket.onEvent(webSocketEvent);
 }
-
-
-
 
 void loop()
 {
   // put your main code here, to run repeatedly:
+  if ( bWiFiReconnect ) {
+    Serial.println("Connecting to Wi-Fi");
+    bWiFiReconnect = false;
+    WiFi.disconnect();
+    WiFi.begin(config_wifi_ssid.c_str(),config_wifi_pwd.c_str());
+    bWebSocketReconnect = true;
+  }
+
+  if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED ) {
+    Serial.println("Connecting to WebSocket");
+    bWebSocketReconnect = false;
+    webSocket.beginSSL(config_wshost, 443, config_wspath);
+  }
 
   // Red if no wifi, otherwise green
   //bool connected = WiFi.isConnected();
@@ -220,6 +327,7 @@ void loop()
   smartdisplay_set_led_color(rgb);
   //   ArduinoOTA.handle();
 
-  display_update();
   lv_timer_handler();
+
+  webSocket.loop();
 }
