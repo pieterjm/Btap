@@ -1,95 +1,126 @@
 // SquareLine LVGL GENERATED FILE
 // EDITOR VERSION: SquareLine Studio 1.2.1
 // LVGL VERSION: 8.3.4
-// PROJECT: SquareLine_Project
+// PROJECT: SquareLine_Project4
 
 #include "ui.h"
 #include "plebtap.h"
 
-void ButtonConfigBackMinusClicked(lv_event_t * e)
+void ButtonPinOneClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_BACK,-1);
-	lv_label_set_text_fmt(ui_LabelConfigBackServo,"%d",angle);
+	addToPIN(1);
 }
 
-
-void ButtonConfigBackPlusClicked(lv_event_t * e)
+void ButtonPinTwoClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_BACK,1);
-	lv_label_set_text_fmt(ui_LabelConfigBackServo,"%d",angle);
+	addToPIN(2);
 }
 
-void ButtonConfigBackServoClicked(lv_event_t * e)
+void ButtonPinThreeClicked(lv_event_t * e)
 {
 	// Your code here
-	moveServo(PLEBTAP_SERVO_BACK);
+	addToPIN(3);
 }
 
-void ButtonConfigCloseMinusClicked(lv_event_t * e)
+void ButtonPinFourClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_CLOSE,-1);
-	lv_label_set_text_fmt(ui_LabelConfigCloseServo,"%d",angle);
+	addToPIN(4);
 }
 
-void ButtonConfigCloseServoClicked(lv_event_t * e)
+void ButtonPinFiveClicked(lv_event_t * e)
 {
 	// Your code here
-	moveServo(PLEBTAP_SERVO_CLOSE);
+	addToPIN(5);
 }
 
-void ButtonConfigClosePlusClicked(lv_event_t * e)
+void ButtonPinSixClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_CLOSE,1);
-	lv_label_set_text_fmt(ui_LabelConfigCloseServo,"%d",angle);
+	addToPIN(6);
 }
 
-void ButtonConfigOpenPlusClicked(lv_event_t * e)
+void ButtonPinSevenClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_OPEN,1);
-	lv_label_set_text_fmt(ui_LabelConfigOpenServo,"%d",angle);
+	addToPIN(7);
 }
 
-void ButtonConfigOpenMinusClicked(lv_event_t * e)
+void ButtonPinEightClicked(lv_event_t * e)
 {
 	// Your code here
-	int angle = changeAngle(PLEBTAP_SERVO_OPEN,-1);
-	lv_label_set_text_fmt(ui_LabelConfigOpenServo,"%d",angle);
+	addToPIN(8);
 }
 
-
-void ButtonConfigBierClicked(lv_event_t * e)
+void ButtonPinNineClicked(lv_event_t * e)
 {
 	// Your code here
-	beer(true);
+	addToPIN(9);
+}
+
+void ButtonPinCancelClicked(lv_event_t * e)
+{
+	// Your code here
+	resetPIN();
+}
+
+void ButtonPinZeroClicked(lv_event_t * e)
+{
+	// Your code here
+	addToPIN(0);
+}
+
+void ButtonPinOKClicked(lv_event_t * e)
+{
+	// Your code here
+	if ( checkPIN() == true ) {
+		lv_disp_load_scr(ui_ScreenConfig);	
+	}
+}
+
+void ButtonConfigConnectClicked(lv_event_t * e)
+{
+	// Your code here
+	const char *ssid = lv_textarea_get_text(ui_TextAreaConfigSSID);
+	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);
+	const char *deviceid = lv_textarea_get_text(ui_TextAreaConfigDeviceID);
+	connectPlebTap(ssid,pwd,deviceid);
 }
 
 void ButtonConfigCleanClicked(lv_event_t * e)
 {
-	beer(false);
+	// Your code here
+	beerClean();
 }
 
-void ButtonConfigOpenServoClicked(lv_event_t * e)
+void ButtonConfigCloseClicked(lv_event_t * e)
 {
 	// Your code here
-	moveServo(PLEBTAP_SERVO_OPEN);
+	beerClose();
 }
 
-void ButtonWifiConfigSaveClicked(lv_event_t * e)
+
+void ButtonConfigOpenClicked(lv_event_t * e)
 {
 	// Your code here
-	const char *ssid = lv_textarea_get_text(ui_TextAreaConfigSSID);
-	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);	
-	setWifiCredentials(ssid,pwd);
+	beerOpen();
+}
+
+void ButtonConfigSaveClicked(lv_event_t * e)
+{
+	// Your code here
+	int32_t servoBack = lv_slider_get_value(ui_SliderConfigServoBack);
+	int32_t servoClosed = lv_slider_get_value(ui_SliderConfigServoClosed);
+	int32_t servoOpen = lv_slider_get_value(ui_SliderConfigServoOpen);
+	int32_t tapDuration = lv_slider_get_value(ui_SliderConfigTapDuration);
+	saveTuning(servoBack,servoClosed,servoOpen,tapDuration);
 }
 
 void ButtonBierFlowingStop(lv_event_t * e)
 {
 	// Your code here
 	beerClose();
-	lv_disp_load_scr(ui_ScreenMain);	
 }
+

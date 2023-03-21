@@ -5,27 +5,23 @@
 extern "C" {
 #endif
 
-#define PLEBTAP_SERVO_PIN 21
-#define PLEBTAP_SERVO_BACK 1
-#define PLEBTAP_SERVO_CLOSE 2
-#define PLEBTAP_SERVO_OPEN 3
+void addToPIN(int digit);
 
+void resetPIN();
 
-int changeAngle(int where, int value);
-
-void moveServo(int where);
+bool checkPIN();
 
 void beerOpen();
 
 void beerClose();
 
-void beer(bool bConfig);
+void beerClean();
 
-void clean(bool bConfig);
+void beer();
 
-void beerBack();
+void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid);
 
-void setWifiCredentials(const char *ssid,const char *pwd);
+void saveTuning(int32_t servoBack, int32_t servoClosed, int32_t servoOpen, int32_t tapDuration);
 
 bool getWifiStatus();
 
