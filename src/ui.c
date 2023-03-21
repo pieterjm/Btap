@@ -27,7 +27,6 @@ lv_obj_t * ui_Label18;
 lv_obj_t * ui_ImageQRCodeBorder;
 lv_obj_t * ui_LabelMainWiFiStatus;
 lv_obj_t * ui_LabelMainWebSocketStatus;
-lv_obj_t * ui_Image2;
 lv_obj_t * ui_ScreenPin;
 lv_obj_t * ui_LabelPINValue;
 lv_obj_t * ui_Panel3;
@@ -582,16 +581,6 @@ void ui_ScreenMain_screen_init(void)
     lv_obj_set_style_text_color(ui_LabelMainWebSocketStatus, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelMainWebSocketStatus, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_LabelMainWebSocketStatus, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_Image2 = lv_img_create(ui_ScreenMain);
-    lv_img_set_src(ui_Image2, &ui_img_plebtap_biertest240_png);
-    lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 240
-    lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 240
-    lv_obj_set_x(ui_Image2, -7);
-    lv_obj_set_y(ui_Image2, -7);
-    lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     lv_obj_add_event_cb(ui_ButtonMainConfig, ui_event_ButtonMainConfig, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonMainAbout, ui_event_ButtonMainAbout, LV_EVENT_ALL, NULL);

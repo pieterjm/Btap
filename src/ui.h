@@ -32,7 +32,6 @@ extern lv_obj_t * ui_Label18;
 extern lv_obj_t * ui_ImageQRCodeBorder;
 extern lv_obj_t * ui_LabelMainWiFiStatus;
 extern lv_obj_t * ui_LabelMainWebSocketStatus;
-extern lv_obj_t * ui_Image2;
 extern lv_obj_t * ui_ScreenPin;
 extern lv_obj_t * ui_LabelPINValue;
 extern lv_obj_t * ui_Panel3;
@@ -154,13 +153,13 @@ void ButtonPinZeroClicked(lv_event_t * e);
 void ButtonPinOKClicked(lv_event_t * e);
 void ButtonConfigConnectClicked(lv_event_t * e);
 void ButtonConfigCleanClicked(lv_event_t * e);
+void ButtonConfigCloseClicked(lv_event_t * e);
 void ButtonConfigOpenClicked(lv_event_t * e);
 void ButtonConfigSaveClicked(lv_event_t * e);
 void ButtonBierFlowingStop(lv_event_t * e);
 
 LV_IMG_DECLARE(ui_img_kanhetal256_png);    // assets/kanhetal256.png
 LV_IMG_DECLARE(ui_img_329557545);    // assets/qr-code-slagschaduw-274x274-v2.png
-LV_IMG_DECLARE(ui_img_plebtap_biertest240_png);    // assets/plebtap_biertest240.png
 LV_IMG_DECLARE(ui_img_biertap256_png);    // assets/biertap256.png
 
 
