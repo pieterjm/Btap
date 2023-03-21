@@ -75,12 +75,8 @@ void addToPIN(int digit) {
     entered_pin += digit;
 
     String hidePIN = "";
-    for(int i=0;(i<6);i++) {
-      if ( i < entered_pin.length() ) {
-        hidePIN += "*";
-      } else {
-        hidePIN += ".";
-      }
+    for(int i=0;(i<entered_pin.length());i++) {
+      hidePIN += "*";
     }
     lv_label_set_text(ui_LabelPINValue,hidePIN.c_str());
   }
@@ -88,19 +84,22 @@ void addToPIN(int digit) {
 
 void resetPIN() {
   entered_pin = "";
-  lv_label_set_text(ui_LabelPINValue,"......");
+  lv_label_set_text(ui_LabelPINValue,"");
 }
 
 bool checkPIN() {
   if ( entered_pin == String(PLEBTAP_RESCUE_PIN) ) {
     entered_pin = "";
+    lv_label_set_text(ui_LabelPINValue,"");
     return true;
   } 
   if ( config_pin == entered_pin ) {
     entered_pin = "";
-    return true;
+    lv_label_set_text(ui_LabelPINValue,"");
+  return true;
   }
-  config_pin = "";
+  entered_pin = "";
+  lv_label_set_text(ui_LabelPINValue,"");
   return false;
 }
 
@@ -129,27 +128,39 @@ void beer()
 	beerOpen();    
 }
 
+void setUIStatus(bool bWiFiConnected,bool bWebSocketConnected) {
+  if ( bWebSocketConnected ) {
+    lv_label_set_text(ui_LabelAboutStatus,"WebSocket connected");
+    lv_label_set_text(ui_LabelMainWebSocketStatus,"WS OK");
+    lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket connected");
+  } else if ( bWiFiConnected ) {
+    lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi Connected");
+    lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
+    lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket not connected");
+  } else {
+    lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi not connected");
+    lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
+    lv_label_set_text(ui_LabelMainWiFiStatus,"No Wi-Fi");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi not connected\nWebSocket not connected");
+  }
+}
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   switch(type) {
     case WStype_DISCONNECTED:
       Serial.println("WebSocket disconnected");
-      lv_label_set_text(ui_LabelAboutStatus,"WebSocket disconnected");
-      lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
       if ( WiFi.status() == WL_CONNECTED ) {
-        lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
-        lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket not connected");
+        setUIStatus(true,false);
       } else {
-        lv_label_set_text(ui_LabelMainWiFiStatus,"No Wi-Fi");
-        lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi not connected\nWebSocket not connected");
+        setUIStatus(false,false);
       }
       break;
     case WStype_CONNECTED:
       webSocket.sendTXT("Connected");
       Serial.println("WebSocket Connected");
-      lv_label_set_text(ui_LabelAboutStatus,"WebSocket connected");
-      lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket connected");
-      lv_label_set_text(ui_LabelMainWebSocketStatus,"WS OK");
-      lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
+      setUIStatus(true,true);
       break;
     case WStype_TEXT:
       Serial.println("Beer via WebSocket");      
@@ -199,7 +210,7 @@ void loadConfig() {
     } else if ( name  == PLEBTAP_CFG_WSURL ) {
 
       // convert to string object
-      //config_wsurl = value;
+      config_wsurl = value;
       String wsstr = config_wsurl;
 
       // check prefixes
@@ -314,29 +325,45 @@ void setup()
   // set UI components from config
   loadConfig();
 
+  // set the values of the sliders
   lv_slider_set_value(ui_SliderConfigServoBack,config_servo_back,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigServoClosed,config_servo_close,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigServoOpen,config_servo_open,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigTapDuration,config_tap_duration,LV_ANIM_OFF);
+
+  // set the current valuues of the labels
+  lv_label_set_text_fmt(ui_LabelConfigServoBack,"%d",config_servo_back);
+  lv_label_set_text_fmt(ui_LabelConfigServoClosed,"%d",config_servo_close);
+  lv_label_set_text_fmt(ui_LabelConfigServoOpen,"%d",config_servo_open);
+  lv_label_set_text_fmt(ui_LabelConfigTapDuration,"%d",config_tap_duration);
+
+  // set wifi configuration and device id
   lv_textarea_set_text(ui_TextAreaConfigSSID,config_wifi_ssid.c_str());
   lv_textarea_set_text(ui_TextAreaWifiPassword,config_wifi_pwd.c_str());
   lv_textarea_set_text(ui_TextAreaConfigDeviceID,config_deviceid.c_str());
-  lv_label_set_text(ui_LabelPINValue,"......");
+  lv_label_set_text(ui_LabelPINValue,"");
 
-
+  // connect to servo
   servo.attach(PLEBTAP_SERVO_PIN);
   webSocket.onEvent(webSocketEvent);
-  lv_label_set_text(ui_LabelAboutStatus,"Config loaded");
+
+  // Force WiFi to reconnect
+  bWiFiReconnect = true;
+
+
+  // set label in the About screen
+  setUIStatus(false,false);
 }
+
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+
+  // reconnect to Wi-Fi 
   if ( bWiFiReconnect ) {
     bWiFiReconnect = false;
 
     Serial.println("Connecting to Wi-Fi");
-    lv_label_set_text(ui_LabelAboutStatus,"Connecting to Wi-Fi");
     WiFi.disconnect();
     WiFi.begin(config_wifi_ssid.c_str(),config_wifi_pwd.c_str());
 
@@ -347,7 +374,7 @@ void loop()
     bLoadDeviceSettings = false;
 
     Serial.println("Loading device settings");
-    lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi Connected");
+    setUIStatus(true,false);
 
     // retrieve settings json from server
     // configure QR code and WebSocket URL
@@ -358,8 +385,9 @@ void loop()
   if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED ) {
     bWebSocketReconnect = false;
     Serial.println("Connecting to WebSocket");
-    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket Disconnected");
-    lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi Connected");
+
+    setUIStatus(true,false);
+
     webSocket.beginSSL(config_wshost, 443, config_wspath);
   }
 
