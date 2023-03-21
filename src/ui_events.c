@@ -86,7 +86,8 @@ void ButtonConfigConnectClicked(lv_event_t * e)
 	const char *ssid = lv_textarea_get_text(ui_TextAreaConfigSSID);
 	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);
 	const char *deviceid = lv_textarea_get_text(ui_TextAreaConfigDeviceID);
-	connectPlebTap(ssid,pwd,deviceid);
+	const char *cfgserver = lv_textarea_get_text(ui_TextAreaConfigHost);
+	connectPlebTap(ssid,pwd,deviceid,cfgserver);
 }
 
 void ButtonConfigCleanClicked(lv_event_t * e)

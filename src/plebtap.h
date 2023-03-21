@@ -19,7 +19,7 @@ void beerClean();
 
 void beer();
 
-void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid);
+void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid, const char *configserver);
 
 void saveTuning(int32_t servoBack, int32_t servoClosed, int32_t servoOpen, int32_t tapDuration);
 
