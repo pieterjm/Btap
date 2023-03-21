@@ -557,6 +557,8 @@ void ui_ScreenMain_screen_init(void)
     lv_img_set_src(ui_ImageQRCodeBorder, &ui_img_329557545);
     lv_obj_set_width(ui_ImageQRCodeBorder, LV_SIZE_CONTENT);   /// 274
     lv_obj_set_height(ui_ImageQRCodeBorder, LV_SIZE_CONTENT);    /// 274
+    lv_obj_set_x(ui_ImageQRCodeBorder, 5);
+    lv_obj_set_y(ui_ImageQRCodeBorder, 5);
     lv_obj_set_align(ui_ImageQRCodeBorder, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ImageQRCodeBorder, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_ImageQRCodeBorder, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
