@@ -93,6 +93,9 @@ lv_obj_t * ui_LabelConfigStatus;
 lv_obj_t * ui_Label14;
 void ui_event_KeyboardConfigWifi(lv_event_t * e);
 lv_obj_t * ui_KeyboardConfigWifi;
+lv_obj_t * ui_Label36;
+void ui_event_TextAreaConfigHost(lv_event_t * e);
+lv_obj_t * ui_TextAreaConfigHost;
 lv_obj_t * ui_ScreenConfigAdvanced;
 lv_obj_t * ui_PanelHeaderConfig;
 lv_obj_t * ui_Label2;
@@ -337,6 +340,15 @@ void ui_event_KeyboardConfigWifi(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_READY) {
         _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    }
+}
+void ui_event_TextAreaConfigHost(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_keyboard_set_target(ui_KeyboardConfigWifi,  ui_TextAreaConfigHost);
+        _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
     }
 }
 void ui_event_ButtonConfigBack(lv_event_t * e)
@@ -972,7 +984,7 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_width(ui_ButtonConfigTuner, 100);
     lv_obj_set_height(ui_ButtonConfigTuner, 50);
     lv_obj_set_x(ui_ButtonConfigTuner, 10);
-    lv_obj_set_y(ui_ButtonConfigTuner, 210);
+    lv_obj_set_y(ui_ButtonConfigTuner, 260);
     lv_obj_add_flag(ui_ButtonConfigTuner, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonConfigTuner, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_ButtonConfigTuner, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -991,7 +1003,7 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_width(ui_ButtonConfigConnect, 130);
     lv_obj_set_height(ui_ButtonConfigConnect, 50);
     lv_obj_set_x(ui_ButtonConfigConnect, -10);
-    lv_obj_set_y(ui_ButtonConfigConnect, 210);
+    lv_obj_set_y(ui_ButtonConfigConnect, 260);
     lv_obj_set_align(ui_ButtonConfigConnect, LV_ALIGN_TOP_RIGHT);
     lv_obj_add_flag(ui_ButtonConfigConnect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonConfigConnect, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -1014,21 +1026,21 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_y(ui_TextAreaConfigDeviceID, 160);
     lv_obj_set_align(ui_TextAreaConfigDeviceID, LV_ALIGN_TOP_RIGHT);
     lv_textarea_set_max_length(ui_TextAreaConfigDeviceID, 8);
-    lv_textarea_set_placeholder_text(ui_TextAreaConfigDeviceID, "PlebTap device ID");
+    lv_textarea_set_placeholder_text(ui_TextAreaConfigDeviceID, "Device ID");
     lv_textarea_set_one_line(ui_TextAreaConfigDeviceID, true);
 
     ui_LabelConfigStatus = lv_label_create(ui_ScreenConfig);
     lv_obj_set_width(ui_LabelConfigStatus, 210);
-    lv_obj_set_height(ui_LabelConfigStatus, 140);
+    lv_obj_set_height(ui_LabelConfigStatus, 90);
     lv_obj_set_x(ui_LabelConfigStatus, 100);
-    lv_obj_set_y(ui_LabelConfigStatus, 270);
+    lv_obj_set_y(ui_LabelConfigStatus, 320);
     lv_label_set_text(ui_LabelConfigStatus, "--");
 
     ui_Label14 = lv_label_create(ui_ScreenConfig);
     lv_obj_set_width(ui_Label14, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label14, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(ui_Label14, 10);
-    lv_obj_set_y(ui_Label14, 270);
+    lv_obj_set_y(ui_Label14, 320);
     lv_label_set_text(ui_Label14, "Status");
     lv_obj_set_style_text_color(ui_Label14, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label14, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1039,6 +1051,22 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_height(ui_KeyboardConfigWifi, 150);
     lv_obj_add_flag(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN);     /// Flags
 
+    ui_Label36 = lv_label_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_Label36, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label36, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label36, 10);
+    lv_obj_set_y(ui_Label36, 220);
+    lv_label_set_text(ui_Label36, "Config host");
+
+    ui_TextAreaConfigHost = lv_textarea_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_TextAreaConfigHost, 200);
+    lv_obj_set_height(ui_TextAreaConfigHost, LV_SIZE_CONTENT);    /// 70
+    lv_obj_set_x(ui_TextAreaConfigHost, -10);
+    lv_obj_set_y(ui_TextAreaConfigHost, 210);
+    lv_obj_set_align(ui_TextAreaConfigHost, LV_ALIGN_TOP_RIGHT);
+    lv_textarea_set_placeholder_text(ui_TextAreaConfigHost, "Hostname");
+    lv_textarea_set_one_line(ui_TextAreaConfigHost, true);
+
     lv_obj_add_event_cb(ui_Label24, ui_event_Label24, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonConfigWifiBack, ui_event_ButtonConfigWifiBack, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_TextAreaConfigSSID, ui_event_TextAreaConfigSSID, LV_EVENT_ALL, NULL);
@@ -1048,6 +1076,7 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_add_event_cb(ui_TextAreaConfigDeviceID, ui_event_TextAreaConfigDeviceID, LV_EVENT_ALL, NULL);
     lv_keyboard_set_textarea(ui_KeyboardConfigWifi, ui_TextAreaConfigSSID);
     lv_obj_add_event_cb(ui_KeyboardConfigWifi, ui_event_KeyboardConfigWifi, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_TextAreaConfigHost, ui_event_TextAreaConfigHost, LV_EVENT_ALL, NULL);
 
 }
 void ui_ScreenConfigAdvanced_screen_init(void)
