@@ -1,4 +1,6 @@
-## Configration 
+
+
+## Configuration 
 
 The Btap is configured through the userinterface of the device by clicking on the 'Config' button on the main screen. The configuration of the WebSocket URL and the payment LNURL is done through a confguration file that is downloaded from the internet. The download location of the file is:
 
