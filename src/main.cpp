@@ -334,6 +334,8 @@ void setup()
   lv_slider_set_value(ui_SliderConfigServoOpen,config_servo_open,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigTapDuration,config_tap_duration,LV_ANIM_OFF);
 
+  lv_label_set_text(ui_Label17,"BliksemBier");
+  
   // set the current valuues of the labels
   lv_label_set_text_fmt(ui_LabelConfigServoBack,"%d",config_servo_back);
   lv_label_set_text_fmt(ui_LabelConfigServoClosed,"%d",config_servo_close);
