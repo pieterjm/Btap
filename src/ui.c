@@ -70,8 +70,8 @@ lv_obj_t * ui_Label34;
 lv_obj_t * ui_ScreenConfig;
 lv_obj_t * ui_Panel1;
 lv_obj_t * ui_Label23;
-void ui_event_ButtonConfigWifiBack(lv_event_t * e);
-lv_obj_t * ui_ButtonConfigWifiBack;
+void ui_event_ButtonConfigDone(lv_event_t * e);
+lv_obj_t * ui_ButtonConfigDone;
 void ui_event_Label24(lv_event_t * e);
 lv_obj_t * ui_Label24;
 lv_obj_t * ui_Label6;
@@ -87,15 +87,42 @@ lv_obj_t * ui_Label28;
 void ui_event_ButtonConfigConnect(lv_event_t * e);
 lv_obj_t * ui_ButtonConfigConnect;
 lv_obj_t * ui_LabelConfigDeviceID;
-void ui_event_TextAreaConfigDeviceID(lv_event_t * e);
-lv_obj_t * ui_TextAreaConfigDeviceID;
 lv_obj_t * ui_LabelConfigStatus;
 lv_obj_t * ui_Label14;
 void ui_event_KeyboardConfigWifi(lv_event_t * e);
 lv_obj_t * ui_KeyboardConfigWifi;
-lv_obj_t * ui_Label36;
 void ui_event_TextAreaConfigHost(lv_event_t * e);
 lv_obj_t * ui_TextAreaConfigHost;
+void ui_event_Button12(lv_event_t * e);
+lv_obj_t * ui_Button12;
+lv_obj_t * ui_Label37;
+lv_obj_t * ui_PanelConfigPIN;
+lv_obj_t * ui_Label38;
+lv_obj_t * ui_Label39;
+lv_obj_t * ui_Label40;
+void ui_event_TextAreaConfigPINCurrent(lv_event_t * e);
+lv_obj_t * ui_TextAreaConfigPINCurrent;
+void ui_event_TextAreaConfigPINRepeat(lv_event_t * e);
+lv_obj_t * ui_TextAreaConfigPINRepeat;
+void ui_event_TextAreaConfigPINNew(lv_event_t * e);
+lv_obj_t * ui_TextAreaConfigPINNew;
+void ui_event_ButtonConfigPINOK(lv_event_t * e);
+lv_obj_t * ui_ButtonConfigPINOK;
+void ui_event_Label35(lv_event_t * e);
+lv_obj_t * ui_Label35;
+void ui_event_ButtonConfigPINCancel(lv_event_t * e);
+lv_obj_t * ui_ButtonConfigPINCancel;
+void ui_event_Label41(lv_event_t * e);
+lv_obj_t * ui_Label41;
+lv_obj_t * ui_LabelConfigPINMessage;
+lv_obj_t * ui_KeyboardNumeric;
+lv_obj_t * ui_PanelWallet;
+void ui_event_ButtonConfigDone1(lv_event_t * e);
+lv_obj_t * ui_ButtonConfigDone1;
+void ui_event_Label36(lv_event_t * e);
+lv_obj_t * ui_Label36;
+lv_obj_t * ui_Label43;
+lv_obj_t * ui_Label44;
 lv_obj_t * ui_ScreenConfigAdvanced;
 lv_obj_t * ui_PanelHeaderConfig;
 lv_obj_t * ui_Label2;
@@ -274,12 +301,16 @@ void ui_event_ButtonPinOK(lv_event_t * e)
         _ui_screen_change(ui_ScreenConfig, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     }
 }
-void ui_event_ButtonConfigWifiBack(lv_event_t * e)
+void ui_event_ButtonConfigDone(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_CLICKED) {
         _ui_screen_change(ui_ScreenMain, LV_SCR_LOAD_ANIM_NONE, 0, 0);
+        _ui_flag_modify(ui_PanelConfigPIN, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        _ui_flag_modify(ui_PanelWallet, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
     }
 }
 void ui_event_Label24(lv_event_t * e)
@@ -325,15 +356,6 @@ void ui_event_ButtonConfigConnect(lv_event_t * e)
         _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
     }
 }
-void ui_event_TextAreaConfigDeviceID(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t * target = lv_event_get_target(e);
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
-        _ui_keyboard_set_target(ui_KeyboardConfigWifi,  ui_TextAreaConfigDeviceID);
-    }
-}
 void ui_event_KeyboardConfigWifi(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
@@ -349,6 +371,91 @@ void ui_event_TextAreaConfigHost(lv_event_t * e)
     if(event_code == LV_EVENT_CLICKED) {
         _ui_keyboard_set_target(ui_KeyboardConfigWifi,  ui_TextAreaConfigHost);
         _ui_flag_modify(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+    }
+}
+void ui_event_Button12(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_flag_modify(ui_PanelConfigPIN, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+    }
+}
+void ui_event_TextAreaConfigPINCurrent(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_keyboard_set_target(ui_KeyboardNumeric,  ui_TextAreaConfigPINCurrent);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+    }
+}
+void ui_event_TextAreaConfigPINRepeat(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_keyboard_set_target(ui_KeyboardNumeric,  ui_TextAreaConfigPINRepeat);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+    }
+}
+void ui_event_TextAreaConfigPINNew(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_keyboard_set_target(ui_KeyboardNumeric,  ui_TextAreaConfigPINNew);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+    }
+}
+void ui_event_ButtonConfigPINOK(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        ButtonOKPINClicked(e);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    }
+}
+void ui_event_Label35(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(ui_ScreenConfigAdvanced, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0);
+    }
+}
+void ui_event_ButtonConfigPINCancel(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        ButtoCancelPINClicked(e);
+        _ui_flag_modify(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    }
+}
+void ui_event_Label41(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(ui_ScreenConfigAdvanced, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0);
+    }
+}
+void ui_event_ButtonConfigDone1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_flag_modify(ui_PanelWallet, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    }
+}
+void ui_event_Label36(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(ui_ScreenConfigAdvanced, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0);
     }
 }
 void ui_event_ButtonConfigBack(lv_event_t * e)
@@ -919,18 +1026,18 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_style_text_opa(ui_Label23, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_Label23, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_ButtonConfigWifiBack = lv_btn_create(ui_ScreenConfig);
-    lv_obj_set_width(ui_ButtonConfigWifiBack, 100);
-    lv_obj_set_height(ui_ButtonConfigWifiBack, 50);
-    lv_obj_set_x(ui_ButtonConfigWifiBack, -10);
-    lv_obj_set_y(ui_ButtonConfigWifiBack, -10);
-    lv_obj_set_align(ui_ButtonConfigWifiBack, LV_ALIGN_BOTTOM_RIGHT);
-    lv_obj_add_flag(ui_ButtonConfigWifiBack, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
-    lv_obj_clear_flag(ui_ButtonConfigWifiBack, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_ButtonConfigWifiBack, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_ButtonConfigWifiBack, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_ButtonConfigDone = lv_btn_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_ButtonConfigDone, 100);
+    lv_obj_set_height(ui_ButtonConfigDone, 50);
+    lv_obj_set_x(ui_ButtonConfigDone, -10);
+    lv_obj_set_y(ui_ButtonConfigDone, -10);
+    lv_obj_set_align(ui_ButtonConfigDone, LV_ALIGN_BOTTOM_RIGHT);
+    lv_obj_add_flag(ui_ButtonConfigDone, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonConfigDone, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonConfigDone, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonConfigDone, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Label24 = lv_label_create(ui_ButtonConfigWifiBack);
+    ui_Label24 = lv_label_create(ui_ButtonConfigDone);
     lv_obj_set_width(ui_Label24, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label24, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_align(ui_Label24, LV_ALIGN_CENTER);
@@ -975,16 +1082,16 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_height(ui_Label19, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(ui_Label19, 10);
     lv_obj_set_y(ui_Label19, 170);
-    lv_label_set_text(ui_Label19, "Device ID");
+    lv_label_set_text(ui_Label19, "LNbits host");
     lv_obj_set_style_text_color(ui_Label19, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label19, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_Label19, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonConfigTuner = lv_btn_create(ui_ScreenConfig);
-    lv_obj_set_width(ui_ButtonConfigTuner, 100);
+    lv_obj_set_width(ui_ButtonConfigTuner, 95);
     lv_obj_set_height(ui_ButtonConfigTuner, 50);
     lv_obj_set_x(ui_ButtonConfigTuner, 10);
-    lv_obj_set_y(ui_ButtonConfigTuner, 260);
+    lv_obj_set_y(ui_ButtonConfigTuner, 210);
     lv_obj_add_flag(ui_ButtonConfigTuner, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonConfigTuner, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_ButtonConfigTuner, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1000,10 +1107,10 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_style_text_font(ui_Label28, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonConfigConnect = lv_btn_create(ui_ScreenConfig);
-    lv_obj_set_width(ui_ButtonConfigConnect, 130);
+    lv_obj_set_width(ui_ButtonConfigConnect, 95);
     lv_obj_set_height(ui_ButtonConfigConnect, 50);
     lv_obj_set_x(ui_ButtonConfigConnect, -10);
-    lv_obj_set_y(ui_ButtonConfigConnect, 260);
+    lv_obj_set_y(ui_ButtonConfigConnect, 210);
     lv_obj_set_align(ui_ButtonConfigConnect, LV_ALIGN_TOP_RIGHT);
     lv_obj_add_flag(ui_ButtonConfigConnect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonConfigConnect, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -1019,28 +1126,18 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_style_text_opa(ui_LabelConfigDeviceID, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_LabelConfigDeviceID, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_TextAreaConfigDeviceID = lv_textarea_create(ui_ScreenConfig);
-    lv_obj_set_width(ui_TextAreaConfigDeviceID, 200);
-    lv_obj_set_height(ui_TextAreaConfigDeviceID, LV_SIZE_CONTENT);    /// 70
-    lv_obj_set_x(ui_TextAreaConfigDeviceID, -10);
-    lv_obj_set_y(ui_TextAreaConfigDeviceID, 160);
-    lv_obj_set_align(ui_TextAreaConfigDeviceID, LV_ALIGN_TOP_RIGHT);
-    lv_textarea_set_max_length(ui_TextAreaConfigDeviceID, 8);
-    lv_textarea_set_placeholder_text(ui_TextAreaConfigDeviceID, "Device ID");
-    lv_textarea_set_one_line(ui_TextAreaConfigDeviceID, true);
-
     ui_LabelConfigStatus = lv_label_create(ui_ScreenConfig);
     lv_obj_set_width(ui_LabelConfigStatus, 210);
-    lv_obj_set_height(ui_LabelConfigStatus, 90);
+    lv_obj_set_height(ui_LabelConfigStatus, 140);
     lv_obj_set_x(ui_LabelConfigStatus, 100);
-    lv_obj_set_y(ui_LabelConfigStatus, 320);
+    lv_obj_set_y(ui_LabelConfigStatus, 270);
     lv_label_set_text(ui_LabelConfigStatus, "--");
 
     ui_Label14 = lv_label_create(ui_ScreenConfig);
     lv_obj_set_width(ui_Label14, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label14, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(ui_Label14, 10);
-    lv_obj_set_y(ui_Label14, 320);
+    lv_obj_set_y(ui_Label14, 270);
     lv_label_set_text(ui_Label14, "Status");
     lv_obj_set_style_text_color(ui_Label14, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label14, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1051,32 +1148,229 @@ void ui_ScreenConfig_screen_init(void)
     lv_obj_set_height(ui_KeyboardConfigWifi, 150);
     lv_obj_add_flag(ui_KeyboardConfigWifi, LV_OBJ_FLAG_HIDDEN);     /// Flags
 
-    ui_Label36 = lv_label_create(ui_ScreenConfig);
-    lv_obj_set_width(ui_Label36, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label36, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label36, 10);
-    lv_obj_set_y(ui_Label36, 220);
-    lv_label_set_text(ui_Label36, "Config host");
-
     ui_TextAreaConfigHost = lv_textarea_create(ui_ScreenConfig);
     lv_obj_set_width(ui_TextAreaConfigHost, 200);
     lv_obj_set_height(ui_TextAreaConfigHost, LV_SIZE_CONTENT);    /// 70
     lv_obj_set_x(ui_TextAreaConfigHost, -10);
-    lv_obj_set_y(ui_TextAreaConfigHost, 210);
+    lv_obj_set_y(ui_TextAreaConfigHost, 160);
     lv_obj_set_align(ui_TextAreaConfigHost, LV_ALIGN_TOP_RIGHT);
     lv_textarea_set_placeholder_text(ui_TextAreaConfigHost, "Hostname");
     lv_textarea_set_one_line(ui_TextAreaConfigHost, true);
 
+    ui_Button12 = lv_btn_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_Button12, 95);
+    lv_obj_set_height(ui_Button12, 50);
+    lv_obj_set_x(ui_Button12, 0);
+    lv_obj_set_y(ui_Button12, 210);
+    lv_obj_set_align(ui_Button12, LV_ALIGN_TOP_MID);
+    lv_obj_add_flag(ui_Button12, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Button12, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Button12, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Button12, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label37 = lv_label_create(ui_Button12);
+    lv_obj_set_width(ui_Label37, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label37, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label37, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label37, "PIN");
+    lv_obj_set_style_text_color(ui_Label37, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label37, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label37, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_PanelConfigPIN = lv_obj_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_PanelConfigPIN, 256);
+    lv_obj_set_height(ui_PanelConfigPIN, 256);
+    lv_obj_set_x(ui_PanelConfigPIN, 0);
+    lv_obj_set_y(ui_PanelConfigPIN, 70);
+    lv_obj_set_align(ui_PanelConfigPIN, LV_ALIGN_TOP_MID);
+    lv_obj_add_flag(ui_PanelConfigPIN, LV_OBJ_FLAG_HIDDEN);     /// Flags
+    lv_obj_clear_flag(ui_PanelConfigPIN, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_PanelConfigPIN, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_PanelConfigPIN, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_PanelConfigPIN, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_PanelConfigPIN, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_PanelConfigPIN, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label38 = lv_label_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_Label38, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label38, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label38, 0);
+    lv_obj_set_y(ui_Label38, 10);
+    lv_label_set_text(ui_Label38, "Current");
+
+    ui_Label39 = lv_label_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_Label39, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label39, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label39, 0);
+    lv_obj_set_y(ui_Label39, 60);
+    lv_label_set_text(ui_Label39, "New");
+
+    ui_Label40 = lv_label_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_Label40, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label40, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label40, 0);
+    lv_obj_set_y(ui_Label40, 110);
+    lv_label_set_text(ui_Label40, "Repeat");
+
+    ui_TextAreaConfigPINCurrent = lv_textarea_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_TextAreaConfigPINCurrent, 150);
+    lv_obj_set_height(ui_TextAreaConfigPINCurrent, LV_SIZE_CONTENT);    /// 70
+    lv_obj_set_align(ui_TextAreaConfigPINCurrent, LV_ALIGN_TOP_RIGHT);
+    if("0123456789" == "") lv_textarea_set_accepted_chars(ui_TextAreaConfigPINCurrent, NULL);
+    else lv_textarea_set_accepted_chars(ui_TextAreaConfigPINCurrent, "0123456789");
+    lv_textarea_set_max_length(ui_TextAreaConfigPINCurrent, 6);
+    lv_textarea_set_placeholder_text(ui_TextAreaConfigPINCurrent, "Current PIN");
+    lv_textarea_set_one_line(ui_TextAreaConfigPINCurrent, true);
+    lv_textarea_set_password_mode(ui_TextAreaConfigPINCurrent, true);
+    lv_obj_set_style_text_font(ui_TextAreaConfigPINCurrent, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_TextAreaConfigPINRepeat = lv_textarea_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_TextAreaConfigPINRepeat, 150);
+    lv_obj_set_height(ui_TextAreaConfigPINRepeat, LV_SIZE_CONTENT);    /// 70
+    lv_obj_set_x(ui_TextAreaConfigPINRepeat, 0);
+    lv_obj_set_y(ui_TextAreaConfigPINRepeat, 100);
+    lv_obj_set_align(ui_TextAreaConfigPINRepeat, LV_ALIGN_TOP_RIGHT);
+    if("0123456789" == "") lv_textarea_set_accepted_chars(ui_TextAreaConfigPINRepeat, NULL);
+    else lv_textarea_set_accepted_chars(ui_TextAreaConfigPINRepeat, "0123456789");
+    lv_textarea_set_max_length(ui_TextAreaConfigPINRepeat, 6);
+    lv_textarea_set_placeholder_text(ui_TextAreaConfigPINRepeat, "Confirm PIN");
+    lv_textarea_set_one_line(ui_TextAreaConfigPINRepeat, true);
+    lv_textarea_set_password_mode(ui_TextAreaConfigPINRepeat, true);
+    lv_obj_set_style_text_font(ui_TextAreaConfigPINRepeat, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_TextAreaConfigPINNew = lv_textarea_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_TextAreaConfigPINNew, 150);
+    lv_obj_set_height(ui_TextAreaConfigPINNew, LV_SIZE_CONTENT);    /// 70
+    lv_obj_set_x(ui_TextAreaConfigPINNew, 0);
+    lv_obj_set_y(ui_TextAreaConfigPINNew, 50);
+    lv_obj_set_align(ui_TextAreaConfigPINNew, LV_ALIGN_TOP_RIGHT);
+    if("0123456789" == "") lv_textarea_set_accepted_chars(ui_TextAreaConfigPINNew, NULL);
+    else lv_textarea_set_accepted_chars(ui_TextAreaConfigPINNew, "0123456789");
+    lv_textarea_set_max_length(ui_TextAreaConfigPINNew, 6);
+    lv_textarea_set_placeholder_text(ui_TextAreaConfigPINNew, "New PIN");
+    lv_textarea_set_one_line(ui_TextAreaConfigPINNew, true);
+    lv_textarea_set_password_mode(ui_TextAreaConfigPINNew, true);
+    lv_obj_set_style_text_font(ui_TextAreaConfigPINNew, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonConfigPINOK = lv_btn_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_ButtonConfigPINOK, 100);
+    lv_obj_set_height(ui_ButtonConfigPINOK, 50);
+    lv_obj_set_align(ui_ButtonConfigPINOK, LV_ALIGN_BOTTOM_RIGHT);
+    lv_obj_add_flag(ui_ButtonConfigPINOK, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonConfigPINOK, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonConfigPINOK, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonConfigPINOK, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label35 = lv_label_create(ui_ButtonConfigPINOK);
+    lv_obj_set_width(ui_Label35, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label35, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label35, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label35, "OK");
+    lv_obj_set_style_text_color(ui_Label35, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label35, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label35, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonConfigPINCancel = lv_btn_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_ButtonConfigPINCancel, 100);
+    lv_obj_set_height(ui_ButtonConfigPINCancel, 50);
+    lv_obj_set_align(ui_ButtonConfigPINCancel, LV_ALIGN_BOTTOM_LEFT);
+    lv_obj_add_flag(ui_ButtonConfigPINCancel, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonConfigPINCancel, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonConfigPINCancel, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonConfigPINCancel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label41 = lv_label_create(ui_ButtonConfigPINCancel);
+    lv_obj_set_width(ui_Label41, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label41, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label41, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label41, "Cancel");
+    lv_obj_set_style_text_color(ui_Label41, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label41, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label41, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_LabelConfigPINMessage = lv_label_create(ui_PanelConfigPIN);
+    lv_obj_set_width(ui_LabelConfigPINMessage, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LabelConfigPINMessage, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_LabelConfigPINMessage, 0);
+    lv_obj_set_y(ui_LabelConfigPINMessage, -60);
+    lv_obj_set_align(ui_LabelConfigPINMessage, LV_ALIGN_BOTTOM_MID);
+    lv_label_set_text(ui_LabelConfigPINMessage, "");
+
+    ui_KeyboardNumeric = lv_keyboard_create(ui_ScreenConfig);
+    lv_keyboard_set_mode(ui_KeyboardNumeric, LV_KEYBOARD_MODE_NUMBER);
+    lv_obj_set_width(ui_KeyboardNumeric, 320);
+    lv_obj_set_height(ui_KeyboardNumeric, 143);
+    lv_obj_set_x(ui_KeyboardNumeric, 0);
+    lv_obj_set_y(ui_KeyboardNumeric, 149);
+    lv_obj_set_align(ui_KeyboardNumeric, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_KeyboardNumeric, LV_OBJ_FLAG_HIDDEN);     /// Flags
+
+    ui_PanelWallet = lv_obj_create(ui_ScreenConfig);
+    lv_obj_set_width(ui_PanelWallet, 256);
+    lv_obj_set_height(ui_PanelWallet, 400);
+    lv_obj_set_align(ui_PanelWallet, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_PanelWallet, LV_OBJ_FLAG_HIDDEN);     /// Flags
+    lv_obj_clear_flag(ui_PanelWallet, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_PanelWallet, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_PanelWallet, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_PanelWallet, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_PanelWallet, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_PanelWallet, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonConfigDone1 = lv_btn_create(ui_PanelWallet);
+    lv_obj_set_width(ui_ButtonConfigDone1, 200);
+    lv_obj_set_height(ui_ButtonConfigDone1, 50);
+    lv_obj_set_align(ui_ButtonConfigDone1, LV_ALIGN_BOTTOM_MID);
+    lv_obj_add_flag(ui_ButtonConfigDone1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonConfigDone1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonConfigDone1, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonConfigDone1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label36 = lv_label_create(ui_ButtonConfigDone1);
+    lv_obj_set_width(ui_Label36, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label36, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label36, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label36, "I understand");
+    lv_obj_set_style_text_color(ui_Label36, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label36, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label36, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label43 = lv_label_create(ui_PanelWallet);
+    lv_obj_set_width(ui_Label43, LV_SIZE_CONTENT);   /// 300
+    lv_obj_set_height(ui_Label43, LV_SIZE_CONTENT);    /// 200
+    lv_obj_set_align(ui_Label43, LV_ALIGN_TOP_MID);
+    lv_label_set_text(ui_Label43, "Wallet QR code");
+    lv_obj_set_style_text_font(ui_Label43, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label44 = lv_label_create(ui_PanelWallet);
+    lv_obj_set_width(ui_Label44, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label44, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label44, 0);
+    lv_obj_set_y(ui_Label44, -70);
+    lv_obj_set_align(ui_Label44, LV_ALIGN_BOTTOM_MID);
+    lv_label_set_text(ui_Label44,
+                      "Scan the QR code to access your \nwallet and configure pricing.  \nStore the URL, as I will show \nthis only once!!!!");
+
     lv_obj_add_event_cb(ui_Label24, ui_event_Label24, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_ButtonConfigWifiBack, ui_event_ButtonConfigWifiBack, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_ButtonConfigDone, ui_event_ButtonConfigDone, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_TextAreaConfigSSID, ui_event_TextAreaConfigSSID, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_TextAreaWifiPassword, ui_event_TextAreaWifiPassword, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonConfigTuner, ui_event_ButtonConfigTuner, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonConfigConnect, ui_event_ButtonConfigConnect, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_TextAreaConfigDeviceID, ui_event_TextAreaConfigDeviceID, LV_EVENT_ALL, NULL);
     lv_keyboard_set_textarea(ui_KeyboardConfigWifi, ui_TextAreaConfigSSID);
     lv_obj_add_event_cb(ui_KeyboardConfigWifi, ui_event_KeyboardConfigWifi, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_TextAreaConfigHost, ui_event_TextAreaConfigHost, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Button12, ui_event_Button12, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_TextAreaConfigPINCurrent, ui_event_TextAreaConfigPINCurrent, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_TextAreaConfigPINRepeat, ui_event_TextAreaConfigPINRepeat, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_TextAreaConfigPINNew, ui_event_TextAreaConfigPINNew, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Label35, ui_event_Label35, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_ButtonConfigPINOK, ui_event_ButtonConfigPINOK, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Label41, ui_event_Label41, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_ButtonConfigPINCancel, ui_event_ButtonConfigPINCancel, LV_EVENT_ALL, NULL);
+    lv_keyboard_set_textarea(ui_KeyboardNumeric, ui_TextAreaConfigPINCurrent);
+    lv_obj_add_event_cb(ui_Label36, ui_event_Label36, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_ButtonConfigDone1, ui_event_ButtonConfigDone1, LV_EVENT_ALL, NULL);
 
 }
 void ui_ScreenConfigAdvanced_screen_init(void)
@@ -1234,7 +1528,7 @@ void ui_ScreenConfigAdvanced_screen_init(void)
     lv_obj_set_style_bg_opa(ui_SliderConfigServoOpen, 255, LV_PART_KNOB | LV_STATE_DEFAULT);
 
     ui_ButtonConfigServoBack = lv_btn_create(ui_ScreenConfigAdvanced);
-    lv_obj_set_width(ui_ButtonConfigServoBack, 90);
+    lv_obj_set_width(ui_ButtonConfigServoBack, 95);
     lv_obj_set_height(ui_ButtonConfigServoBack, 50);
     lv_obj_set_x(ui_ButtonConfigServoBack, 10);
     lv_obj_set_y(ui_ButtonConfigServoBack, 230);
@@ -1253,7 +1547,7 @@ void ui_ScreenConfigAdvanced_screen_init(void)
     lv_obj_set_style_text_font(ui_Label7, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonConfigServoClose = lv_btn_create(ui_ScreenConfigAdvanced);
-    lv_obj_set_width(ui_ButtonConfigServoClose, 90);
+    lv_obj_set_width(ui_ButtonConfigServoClose, 95);
     lv_obj_set_height(ui_ButtonConfigServoClose, 50);
     lv_obj_set_x(ui_ButtonConfigServoClose, 0);
     lv_obj_set_y(ui_ButtonConfigServoClose, 230);
@@ -1273,7 +1567,7 @@ void ui_ScreenConfigAdvanced_screen_init(void)
     lv_obj_set_style_text_font(ui_Label10, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonConfigServoOpen = lv_btn_create(ui_ScreenConfigAdvanced);
-    lv_obj_set_width(ui_ButtonConfigServoOpen, 90);
+    lv_obj_set_width(ui_ButtonConfigServoOpen, 95);
     lv_obj_set_height(ui_ButtonConfigServoOpen, 50);
     lv_obj_set_x(ui_ButtonConfigServoOpen, -10);
     lv_obj_set_y(ui_ButtonConfigServoOpen, 230);

@@ -16,7 +16,7 @@ int config_servo_open = 30;
 String config_wifi_ssid = "";
 String config_wifi_pwd = "";
 String config_wsurl = "wss://lnbits.meulenhoff.org/api/v1/ws/CuEgAhrWog5hw4BgdBjqUP";
-String config_deviceid = "";
+String config_lnbits_host = "";
 int config_tap_duration = 8000;
 String config_pin = String(PLEBTAP_CONFIG_PIN);
 
@@ -39,7 +39,7 @@ WebSocketsClient webSocket;
 #define PLEBTAP_CFG_SERVO_OPEN "servoopen"
 #define PLEBTAP_CFG_WSURL "websocket"
 #define PLEBTAP_CFG_TAP_DURATION "tapduration"
-#define PLEBTAP_CFG_DEVICEID "deviceid"
+#define PLEBTAP_CFG_LNBITS_HOST "lnbitshost"
 #define PLEBTAP_CFG_PIN "pin"
 
 void beerClose() {
@@ -54,10 +54,10 @@ void beerClean() {
   servo.write(config_servo_back);
 }
 
-void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid) {
+void connectPlebTap(const char *ssid,const char *pwd, const char *lnbits_host) {
   config_wifi_ssid = String(ssid);
   config_wifi_pwd = String(pwd);
-  config_deviceid = String(deviceid);
+  config_lnbits_host = String(lnbits_host);
   bWiFiReconnect = true;
   saveConfig();
 }
@@ -80,6 +80,11 @@ void addToPIN(int digit) {
     }
     lv_label_set_text(ui_LabelPINValue,hidePIN.c_str());
   }
+}
+
+void updatePIN(const char *newpin) {
+  config_pin = newpin;
+  saveConfig();
 }
 
 void resetPIN() {
@@ -243,8 +248,8 @@ void loadConfig() {
       config_servo_back = String(value).toInt();
     } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
       config_tap_duration = String(value).toInt();
-    } else if ( name == PLEBTAP_CFG_DEVICEID ) {
-      config_deviceid = String(value);     
+    } else if ( name == PLEBTAP_CFG_LNBITS_HOST ) {
+      config_lnbits_host = String(value);     
     } else if (name == PLEBTAP_CFG_PIN ) {
       config_pin = String(value);
     }
@@ -271,8 +276,8 @@ void saveConfig() {
   doc[4]["value"] = config_servo_open;
   doc[5]["name"] = PLEBTAP_CFG_TAP_DURATION;
   doc[5]["value"] = config_tap_duration;
-  doc[6]["name"] = PLEBTAP_CFG_DEVICEID;
-  doc[6]["value"] = config_deviceid;
+  doc[6]["name"] = PLEBTAP_CFG_LNBITS_HOST;
+  doc[6]["value"] = config_lnbits_host;
   doc[7]["name"] = PLEBTAP_CFG_WSURL;
   doc[7]["value"] = config_wsurl;
   doc[8]["name"] = PLEBTAP_CFG_PIN;
@@ -340,7 +345,7 @@ void setup()
   // set wifi configuration and device id
   lv_textarea_set_text(ui_TextAreaConfigSSID,config_wifi_ssid.c_str());
   lv_textarea_set_text(ui_TextAreaWifiPassword,config_wifi_pwd.c_str());
-  lv_textarea_set_text(ui_TextAreaConfigDeviceID,config_deviceid.c_str());
+  lv_textarea_set_text(ui_TextAreaConfigHost,config_lnbits_host.c_str());
   lv_label_set_text(ui_LabelPINValue,"");
 
   // connect to servo
