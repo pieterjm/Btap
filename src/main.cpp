@@ -11,25 +11,26 @@
 
 // config variables
 int config_servo_back = 10;
-int config_servo_close = 20;
-int config_servo_open = 30;
+int config_servo_close = 30;
+int config_servo_open = 180;
 String config_wifi_ssid = "";
 String config_wifi_pwd = "";
-String config_wsurl = "wss://lnbits.meulenhoff.org/api/v1/ws/CuEgAhrWog5hw4BgdBjqUP";
 String config_lnbits_host = "";
+String config_lnurldeviceid = "";
+String config_invoicekey = "";
 int config_tap_duration = 8000;
 String config_pin = String(PLEBTAP_CONFIG_PIN);
 
 // two booleans to pass instructions to the main loop
 bool bWiFiReconnect = true;
-bool bLoadDeviceSettings = false;
+bool bGetLNURLDevice = false;
 bool bWebSocketReconnect = false;
-String config_wshost = "";
-String config_wspath = "";
 String entered_pin = "";
 
 Servo servo;
 WebSocketsClient webSocket;
+lv_obj_t *ui_Qrcode = NULL; // the QR code object
+
 
 // defines for the config file
 #define PLEBTAP_CFG_SSID "ssid"
@@ -37,10 +38,16 @@ WebSocketsClient webSocket;
 #define PLEBTAP_CFG_SERVO_BACK "servoback"
 #define PLEBTAP_CFG_SERVO_CLOSE "servoclose"
 #define PLEBTAP_CFG_SERVO_OPEN "servoopen"
-#define PLEBTAP_CFG_WSURL "websocket"
 #define PLEBTAP_CFG_TAP_DURATION "tapduration"
 #define PLEBTAP_CFG_LNBITS_HOST "lnbitshost"
+#define PLEBTAP_CFG_INVOICEKEY "invoicekey"
+#define PLEBTAP_CFG_LNURLDEVICEID "lnurldeviceid"
 #define PLEBTAP_CFG_PIN "pin"
+
+// defines for the QR code
+#define QRCODE_PIXEL_SIZE 3
+#define QRCODE_X_OFFSET 10
+#define QRCODE_Y_OFFSET 10
 
 void beerClose() {
   servo.write(config_servo_close);
@@ -133,42 +140,54 @@ void beer()
 	beerOpen();    
 }
 
-void setUIStatus(bool bWiFiConnected,bool bWebSocketConnected) {
+void updateQrcode(String data)
+{
+  /*Set data*/
+  lv_qrcode_update(ui_Qrcode, data.c_str(), data.length());
+}
+
+void setUIStatus(bool bWiFiConnected,bool bConfigLoaded, bool bWebSocketConnected) {
   if ( bWebSocketConnected ) {
     lv_label_set_text(ui_LabelAboutStatus,"WebSocket connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"WS OK");
     lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
-    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket connected");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration loaded\nWebSocket connected");
+    lv_obj_clear_flag(ui_Qrcode,LV_OBJ_FLAG_HIDDEN);
+  } else if ( bConfigLoaded  ) {
+    lv_label_set_text(ui_LabelAboutStatus,"Configuration loaded");
+    lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
+    lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration loaded\nWebSocket not connected");
+    lv_obj_add_flag(ui_Qrcode,LV_OBJ_FLAG_HIDDEN);
   } else if ( bWiFiConnected ) {
     lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi Connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
     lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
-    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nWebSocket not connected");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration not loaded\nWebSocket not connected");
+    lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
   } else {
     lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi not connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
     lv_label_set_text(ui_LabelMainWiFiStatus,"No Wi-Fi");
-    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi not connected\nWebSocket not connected");
+    lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi not connected\nConfiguration not loaded\nWebSocket not connected");
+    lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
   }
 }
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   switch(type) {
     case WStype_DISCONNECTED:
-      Serial.println("WebSocket disconnected");
       if ( WiFi.status() == WL_CONNECTED ) {
-        setUIStatus(true,false);
+        setUIStatus(true,true,false);                  
       } else {
-        setUIStatus(false,false);
+        setUIStatus(false,false,false);
       }
       break;
     case WStype_CONNECTED:
       webSocket.sendTXT("Connected");
-      Serial.println("WebSocket Connected");
-      setUIStatus(true,true);
+      setUIStatus(true,true,true);
       break;
     case WStype_TEXT:
-      Serial.println("Beer via WebSocket");      
       beer();
       break;
     default:
@@ -181,77 +200,43 @@ void myDelay(uint32_t ms) {
 }
 
 void loadConfig() {
-  Serial.println("Loading config");
-
   File file = LittleFS.open("/config.json", "r");
-  if (!file) {
-    Serial.println("No config file /config.json");
-    return;
-  }
+  if (file) {
 
-  StaticJsonDocument<2000> doc;
-  String content = file.readString();
-  DeserializationError error = deserializeJson(doc, content);
-  file.close();
+    StaticJsonDocument<2000> doc;
+    String content = file.readString();
+    DeserializationError error = deserializeJson(doc, content);
+    file.close();
 
-  if ( error.code() !=  DeserializationError::Ok ) {
-    Serial.println("Serialisation error");
-    return;     
-  }
+    if ( error.code() ==  DeserializationError::Ok ) {
 
-  JsonArray arr = doc.as<JsonArray>();
-  for (JsonObject obj: arr) {
-    String name = obj["name"];
-    String value = obj["value"];
-    Serial.print("Name: ");
-    Serial.println(name);
+      JsonArray arr = doc.as<JsonArray>();
+      for (JsonObject obj: arr) {
+        String name = obj["name"];
+        String value = obj["value"];
 
-    if ( name == PLEBTAP_CFG_SSID ) {
-      config_wifi_ssid = String(value);
-      Serial.print("Wi-Fi SSID: ");
-      Serial.println(config_wifi_ssid);
-    } else if ( name == PLEBTAP_CFG_WIFIPASS ) {
-      config_wifi_pwd = String(value);
-    } else if ( name  == PLEBTAP_CFG_WSURL ) {
-
-      // convert to string object
-      config_wsurl = value;
-      String wsstr = config_wsurl;
-
-      // check prefixes
-      if ( wsstr.startsWith("ws://") ) {
-        wsstr = wsstr.substring(5);
-      } else if ( wsstr.startsWith("wss://") ) {
-        wsstr = wsstr.substring(6);
-      } else {
-        Serial.println("Incorrect websocket URL");
-        continue;
+        if ( name == PLEBTAP_CFG_SSID ) {
+          config_wifi_ssid = String(value);
+        } else if ( name == PLEBTAP_CFG_WIFIPASS ) {
+          config_wifi_pwd = String(value);
+        } else if ( name == PLEBTAP_CFG_SERVO_CLOSE ) {
+          config_servo_close = String(value).toInt();
+        } else if ( name == PLEBTAP_CFG_SERVO_OPEN ) {
+          config_servo_open = String(value).toInt();
+        } else if ( name == PLEBTAP_CFG_SERVO_BACK ) {
+          config_servo_back = String(value).toInt();
+        } else if ( name == PLEBTAP_CFG_LNBITS_HOST ) {
+          config_lnbits_host = String(value);     
+        } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
+          config_tap_duration = String(value).toInt();
+        } else if (name == PLEBTAP_CFG_PIN ) {
+          config_pin = String(value);
+        } else if ( name == PLEBTAP_CFG_INVOICEKEY ) {
+          config_invoicekey = String(value);
+        } else if ( name == PLEBTAP_CFG_LNURLDEVICEID ) {
+          config_lnurldeviceid = String(value);
+        }
       }
-
-      int index = wsstr.indexOf('/');
-      if ( index == -1 ) {
-        Serial.println("No host in WebSocket URL");
-        continue;
-      }
-      config_wshost = wsstr.substring(0,index);
-      config_wspath = wsstr.substring(index);
-
-      Serial.print("WebSocket host: ");
-      Serial.println(config_wshost);
-      Serial.print("WebSocket path: ");
-      Serial.println(config_wspath);
-    } else if ( name == PLEBTAP_CFG_SERVO_CLOSE ) {
-      config_servo_close = String(value).toInt();
-    } else if ( name == PLEBTAP_CFG_SERVO_OPEN ) {
-      config_servo_open = String(value).toInt();
-    } else if ( name == PLEBTAP_CFG_SERVO_BACK ) {
-      config_servo_back = String(value).toInt();
-    } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
-      config_tap_duration = String(value).toInt();
-    } else if ( name == PLEBTAP_CFG_LNBITS_HOST ) {
-      config_lnbits_host = String(value);     
-    } else if (name == PLEBTAP_CFG_PIN ) {
-      config_pin = String(value);
     }
   }
 }
@@ -278,33 +263,53 @@ void saveConfig() {
   doc[5]["value"] = config_tap_duration;
   doc[6]["name"] = PLEBTAP_CFG_LNBITS_HOST;
   doc[6]["value"] = config_lnbits_host;
-  doc[7]["name"] = PLEBTAP_CFG_WSURL;
-  doc[7]["value"] = config_wsurl;
-  doc[8]["name"] = PLEBTAP_CFG_PIN;
-  doc[8]["value"] = config_pin;
+  doc[7]["name"] = PLEBTAP_CFG_PIN;
+  doc[7]["value"] = config_pin;
+  doc[8]["name"] = PLEBTAP_CFG_INVOICEKEY;
+  doc[8]["value"] = config_invoicekey;
+  doc[9]["name"] = PLEBTAP_CFG_LNURLDEVICEID;
+  doc[9]["value"] = config_lnurldeviceid;
 
   String output = "";
   serializeJson(doc, output);
   Serial.println(output);
 
   serializeJson(doc, file);
-    
-
   file.close();
 }
 
-void getLNURLSettings() 
-{
-  WiFiClient client;
-  HTTPClient http;
+void getLNURLDevice()
+{  
+  if ( config_lnbits_host.length() == 0 ) {
+    return;
+  }
 
-  http.begin(client,"https://plebtab.wholestack.nl/config/demo.json");
+
+  String url = "https://";
+  url += config_lnbits_host;
+  url += "/lnurldevice/api/v1/lnurlpos/";
+  url += config_lnurldeviceid;
+  
+  HTTPClient http;
+  http.addHeader("X-Api-Key",config_invoicekey);  
+  http.begin(url);
   int statusCode = http.GET();
-  if ( statusCode != 200 ) {
+  if ( statusCode != HTTP_CODE_OK ) {
     return;
   }  
-  String payload = http.getString();
 
+  // obtain the payload
+  String payload = http.getString();                
+  Serial.println(payload);
+  http.end();
+
+  StaticJsonDocument<2000> doc;
+  DeserializationError error = deserializeJson(doc, payload);
+  if ( error.code() ==  DeserializationError::Ok ) {
+    String lnurl = doc["switches"][0][3];
+    Serial.println(lnurl);
+    updateQrcode(lnurl);
+  }
 }
 
 void setup()
@@ -336,6 +341,8 @@ void setup()
   lv_slider_set_value(ui_SliderConfigServoOpen,config_servo_open,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigTapDuration,config_tap_duration,LV_ANIM_OFF);
 
+  lv_label_set_text(ui_Label17,"BliksemBier");
+  
   // set the current valuues of the labels
   lv_label_set_text_fmt(ui_LabelConfigServoBack,"%d",config_servo_back);
   lv_label_set_text_fmt(ui_LabelConfigServoClosed,"%d",config_servo_close);
@@ -348,6 +355,15 @@ void setup()
   lv_textarea_set_text(ui_TextAreaConfigHost,config_lnbits_host.c_str());
   lv_label_set_text(ui_LabelPINValue,"");
 
+  // initialize the QR code
+  lv_color_t bg_color = lv_color_hex(0xFFFFFF);
+  lv_color_t fg_color = lv_color_hex(0x000000);
+  ui_Qrcode = lv_qrcode_create(ui_ScreenMain,240,fg_color,bg_color);
+  lv_obj_center(ui_Qrcode);
+  lv_obj_set_pos(ui_Qrcode,-3, -3);
+  lv_obj_set_style_border_width(ui_Qrcode, 0, 0);
+  lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
+
   // connect to servo
   servo.attach(PLEBTAP_SERVO_PIN);
   webSocket.onEvent(webSocketEvent);
@@ -355,11 +371,9 @@ void setup()
   // Force WiFi to reconnect
   bWiFiReconnect = true;
 
-
   // set label in the About screen
-  setUIStatus(false,false);
+  setUIStatus(false,false,false);
 }
-
 
 void loop()
 {
@@ -367,36 +381,25 @@ void loop()
   // reconnect to Wi-Fi 
   if ( bWiFiReconnect ) {
     bWiFiReconnect = false;
-
-    Serial.println("Connecting to Wi-Fi");
     WiFi.disconnect();
     WiFi.begin(config_wifi_ssid.c_str(),config_wifi_pwd.c_str());
-
-    bLoadDeviceSettings = true;
+    setUIStatus(false,false, false);
+    bGetLNURLDevice = true;
   }
 
-  if ( bLoadDeviceSettings && WiFi.status() == WL_CONNECTED ) {
-    bLoadDeviceSettings = false;
-
-    Serial.println("Loading device settings");
-    setUIStatus(true,false);
-
-    // retrieve settings json from server
-    // configure QR code and WebSocket URL
-
+  if ( bGetLNURLDevice && WiFi.status() == WL_CONNECTED ) {
+    bGetLNURLDevice = false;
+    setUIStatus(true,false, false);
+    getLNURLDevice();
     bWebSocketReconnect = true;
   }
 
-  if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED ) {
+  if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED && config_lnbits_host.length() > 0  && config_lnurldeviceid.length() > 0 ) {
     bWebSocketReconnect = false;
-    Serial.println("Connecting to WebSocket");
-
-    setUIStatus(true,false);
-
-    webSocket.beginSSL(config_wshost, 443, config_wspath);
+    setUIStatus(true, true, false);
+    webSocket.beginSSL(config_lnbits_host, 443, String("/api/v1/ws/")  + config_lnurldeviceid);
   }
 
-  lv_timer_handler();
-
+  lv_timer_handler();  
   webSocket.loop();
 }
