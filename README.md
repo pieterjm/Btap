@@ -28,7 +28,7 @@ The following parameters are included in the file:
 
 Btap is created in Visual Studio Code using platform.io. To compile your own version, take the following steps:
 
-  1. Install Visual Studio Code
+  1. Install Visual Studio Code. Download from https://code.visualstudio.com/.
   2. Install the Platform IO extension. Open the Extension Manager (click the wheel icon at the bottom of the bar and the left and select Extensions). Search for PlatformIO, and click 'Install'.
   3. In Visual Studio code, open the command palette (Ctrl-Shift-P) and type 'gitcl'.
   4. When prompted for the repository URL, enter the URL of this repository: `git@github.com:pieterjm/Btap.git`
