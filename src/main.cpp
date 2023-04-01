@@ -112,12 +112,12 @@ bool getWebSocketStatus() {
 
 void beerTimerProgress(lv_timer_t * timer)
 {
-  int progress = lv_bar_get_value(ui_BarBeerProgress);
+  int progress = lv_bar_get_value(ui_BarBierProgress);
   progress += 10;
   if ( progress > 100 ) {
     progress = 100;
   }
-  lv_bar_set_value(ui_BarBeerProgress,progress, LV_ANIM_OFF);
+  lv_bar_set_value(ui_BarBierProgress,progress, LV_ANIM_OFF);
 
   if ( progress >=  100 ) {
     beerClose();
@@ -127,7 +127,7 @@ void beerTimerProgress(lv_timer_t * timer)
 
 void beer()
 {
-  lv_bar_set_value(ui_BarBeerProgress,0,LV_ANIM_OFF);
+  lv_bar_set_value(ui_BarBierProgress,0,LV_ANIM_OFF);
 	lv_disp_load_scr(ui_ScreenBierFlowing);	
 	//lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_tap_duration, NULL);
   lv_timer_t *timer = lv_timer_create(beerTimerProgress, config_tap_duration / 10, NULL);
