@@ -153,6 +153,12 @@ lv_obj_t * ui_SliderConfigTapDuration;
 void ui_event_ButtonConfigSave(lv_event_t * e);
 lv_obj_t * ui_ButtonConfigSave;
 lv_obj_t * ui_Label11;
+void ui_event_ScreenBierFlowing(lv_event_t * e);
+lv_obj_t * ui_ScreenBierFlowing;
+lv_obj_t * ui_Panel4;
+lv_obj_t * ui_Label42;
+lv_obj_t * ui_Image3;
+lv_obj_t * ui_BarBierProgress;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
@@ -504,6 +510,14 @@ void ui_event_ButtonConfigSave(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_CLICKED) {
         ButtonConfigSaveClicked(e);
+    }
+}
+void ui_event_ScreenBierFlowing(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        ButtonScreenBierFlowingClicked(e);
     }
 }
 
@@ -1591,6 +1605,58 @@ void ui_ScreenConfigAdvanced_screen_init(void)
     lv_obj_add_event_cb(ui_ButtonConfigSave, ui_event_ButtonConfigSave, LV_EVENT_ALL, NULL);
 
 }
+void ui_ScreenBierFlowing_screen_init(void)
+{
+    ui_ScreenBierFlowing = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_ScreenBierFlowing, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ScreenBierFlowing, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ScreenBierFlowing, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Panel4 = lv_obj_create(ui_ScreenBierFlowing);
+    lv_obj_set_width(ui_Panel4, 320);
+    lv_obj_set_height(ui_Panel4, 50);
+    lv_obj_clear_flag(ui_Panel4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_radius(ui_Panel4, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_Panel4, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_Panel4, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label42 = lv_label_create(ui_Panel4);
+    lv_obj_set_width(ui_Label42, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label42, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label42, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label42, "ENJOY YOUR DRINK!");
+    lv_obj_set_style_text_color(ui_Label42, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label42, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label42, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Image3 = lv_img_create(ui_ScreenBierFlowing);
+    lv_img_set_src(ui_Image3, &ui_img_biertap256_png);
+    lv_obj_set_width(ui_Image3, LV_SIZE_CONTENT);   /// 256
+    lv_obj_set_height(ui_Image3, LV_SIZE_CONTENT);    /// 256
+    lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
+    lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_BarBierProgress = lv_bar_create(ui_ScreenBierFlowing);
+    lv_bar_set_value(ui_BarBierProgress, 25, LV_ANIM_OFF);
+    lv_obj_set_width(ui_BarBierProgress, 260);
+    lv_obj_set_height(ui_BarBierProgress, 20);
+    lv_obj_set_x(ui_BarBierProgress, 0);
+    lv_obj_set_y(ui_BarBierProgress, -70);
+    lv_obj_set_align(ui_BarBierProgress, LV_ALIGN_BOTTOM_MID);
+    lv_obj_set_style_bg_color(ui_BarBierProgress, lv_color_hex(0xFFA900), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_BarBierProgress, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_BarBierProgress, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_BarBierProgress, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_BarBierProgress, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_bg_color(ui_BarBierProgress, lv_color_hex(0x4D4D4E), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_BarBierProgress, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+
+    lv_obj_add_event_cb(ui_ScreenBierFlowing, ui_event_ScreenBierFlowing, LV_EVENT_ALL, NULL);
+
+}
 
 void ui_init(void)
 {
@@ -1603,5 +1669,6 @@ void ui_init(void)
     ui_ScreenPin_screen_init();
     ui_ScreenConfig_screen_init();
     ui_ScreenConfigAdvanced_screen_init();
+    ui_ScreenBierFlowing_screen_init();
     lv_disp_load_scr(ui_ScreenAbout);
 }
