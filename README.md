@@ -2,13 +2,13 @@
 
 ## Configuration 
 
-The Btap is configured through the userinterface of the device by clicking on the 'Config' button on the main screen. The configuration of the WebSocket URL and the payment LNURL is done through a confguration file that is downloaded from the internet. The download location of the file is:
+The tap is configured through the userinterface of the device by clicking on the 'Config' button on the main screen. The configuration of the WebSocket URL and the payment LNURL is done through a confguration file that is downloaded from the internet. The download location of the file is:
 
 ```
-https://{config host}/config/{device id}.json
+https://{config host}/.well-known/bliksembier/{device id}.json
 ```
 
-Both `config host` and `device id` are configured on the device. When a Wi-Fi connection is available, the Btap tries to download the configuration file from the host. The contents of a sample configuration file are shown below.
+Both `config host` and `device id` are configured on the device. When a Wi-Fi connection is available, the tap tries to download the configuration file from the host. The contents of a sample configuration file are shown below.
 
 ```
 {
@@ -28,7 +28,7 @@ The following parameters are included in the file:
 
 Btap is created in Visual Studio Code using platform.io. To compile your own version, take the following steps:
 
-  1. Install Visual Studio Code. Download from https://code.visualstudio.com/.
+  1. Install Visual Studio Code. Download from https://code.visualstudio.com/. If Git is not yet installed on your system, you need to install that as well.
   2. Install the Platform IO extension. Open the Extension Manager (click the wheel icon at the bottom of the bar and the left and select Extensions). Search for PlatformIO, and click 'Install'.
   3. In Visual Studio code, open the command palette (Ctrl-Shift-P) and type 'gitcl'.
   4. When prompted for the repository URL, enter the URL of this repository: `git@github.com:pieterjm/Btap.git`

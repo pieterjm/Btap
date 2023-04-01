@@ -5,13 +5,10 @@
 extern "C" {
 #endif
 
-void addToPIN(int digit);
 
-void resetPIN();
+bool checkPIN(const char *pin);
 
-bool checkPIN();
-
-void updatePIN(const char *newpin);
+void updatePIN(const char *pin);
 
 void beerOpen();
 

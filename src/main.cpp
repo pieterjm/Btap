@@ -30,7 +30,6 @@ String config_deviceid = "";
 bool bWiFiReconnect = true;
 bool bLoadDeviceSettings = false;
 bool bWebSocketReconnect = false;
-String entered_pin = "";
 String config_wshost = "";
 String config_wspath = "";
 
@@ -84,41 +83,19 @@ void saveTuning(int32_t servoBack, int32_t servoClosed, int32_t servoOpen, int32
   saveConfig();
 }
 
-void addToPIN(int digit) {
-  if (  entered_pin.length() < 6 ) {
-    entered_pin += digit;
-
-    String hidePIN = "";
-    for(int i=0;(i<entered_pin.length());i++) {
-      hidePIN += "*";
-    }
-    lv_label_set_text(ui_LabelPINValue,hidePIN.c_str());
-  }
-}
-
-void updatePIN(const char *newpin) {
-  config_pin = newpin;
+void updatePIN(const char *pin) {
+  config_pin = String(pin);
   saveConfig();
 }
 
-void resetPIN() {
-  entered_pin = "";
-  lv_label_set_text(ui_LabelPINValue,"");
-}
   
-bool checkPIN() {
-  Serial.println(config_pin);
-  Serial.println(entered_pin);
-
-  if ( config_pin == entered_pin ) {
-    Serial.println("Entered PIN is correct");
-    entered_pin = "";
-    lv_label_set_text(ui_LabelPINValue,"");
+bool checkPIN(const char *pin) {
+  if ( pin == NULL ) {
+    return false;
+  }
+  if ( String(pin).equals(config_pin) ) {
     return true;
   }
-
-  Serial.println("Entered PIN is not correct");
-  entered_pin = "";
   return false;
 }
 
@@ -133,17 +110,28 @@ bool getWebSocketStatus() {
   return webSocket.isConnected();
 }
 
-void beerTimerFinished(lv_timer_t * timer)
+void beerTimerProgress(lv_timer_t * timer)
 {
-  beerClose();
-  lv_timer_del(timer);
-  lv_disp_load_scr(ui_ScreenMain);	  
+  int progress = lv_bar_get_value(ui_BarBeerProgress);
+  progress += 10;
+  if ( progress > 100 ) {
+    progress = 100;
+  }
+  lv_bar_set_value(ui_BarBeerProgress,progress, LV_ANIM_OFF);
+
+  if ( progress >=  100 ) {
+    beerClose();
+    lv_disp_load_scr(ui_ScreenMain);	  
+  }
 } 
 
 void beer()
 {
+  lv_bar_set_value(ui_BarBeerProgress,0,LV_ANIM_OFF);
 	lv_disp_load_scr(ui_ScreenBierFlowing);	
-	lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_tap_duration, NULL);
+	//lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_tap_duration, NULL);
+  lv_timer_t *timer = lv_timer_create(beerTimerProgress, config_tap_duration / 10, NULL);
+  lv_timer_set_repeat_count(timer,10);
 	beerOpen();    
 }
 
@@ -210,7 +198,6 @@ void loadConfig() {
     DeserializationError error = deserializeJson(doc, content);
     file.close();
 
-    Serial.println(content);
     if ( error.code() ==  DeserializationError::Ok ) {
 
       JsonArray arr = doc.as<JsonArray>();
@@ -272,8 +259,6 @@ void saveConfig() {
 
   String output = "";
   serializeJson(doc, output);
-  Serial.println(output);
-
   serializeJson(doc, file);
   file.close();
 }
