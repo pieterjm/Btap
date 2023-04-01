@@ -96,6 +96,8 @@ void ButtonOKPINClicked(lv_event_t * e)
 	const char *newPIN = lv_textarea_get_text(ui_TextAreaConfigPINNew);
 	const char *repeatPIN = lv_textarea_get_text(ui_TextAreaConfigPINRepeat);
 
+
+
 	if ( checkPIN(currentPIN) == false ) {
 		lv_label_set_text(ui_LabelConfigPINMessage,"Current PIN incorrect");
 		return;
@@ -164,3 +166,10 @@ void ButtonBierFlowingStop(lv_event_t * e)
 	// Your code here
 	beerClose();
 }
+
+void ButtonConfigWalletClicked(lv_event_t * e)
+{
+	// Your code here
+	lv_obj_clear_flag(ui_PanelWallet,LV_OBJ_FLAG_HIDDEN);
+}
+

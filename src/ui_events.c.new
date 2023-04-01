@@ -1,0 +1,106 @@
+// SquareLine LVGL GENERATED FILE
+// EDITOR VERSION: SquareLine Studio 1.2.1
+// LVGL VERSION: 8.3.4
+// PROJECT: SquareLine_Project4
+
+#include "ui.h"
+
+void ButtonPinOneClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinTwoClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinThreeClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinFourClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinFiveClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinSixClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinSevenClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinEightClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinNineClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinCancelClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinZeroClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonPinOKClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonConfigConnectClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonOKPINClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtoCancelPINClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonConfigCleanClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonConfigCloseClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonConfigOpenClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonConfigSaveClicked(lv_event_t * e)
+{
+	// Your code here
+}
+
+void ButtonBierFlowingStop(lv_event_t * e)
+{
+	// Your code here
+}
