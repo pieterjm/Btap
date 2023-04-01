@@ -274,9 +274,6 @@ void ui_event_ButtonPINCancel(lv_event_t * e)
     if(event_code == LV_EVENT_CLICKED) {
         ButtonPinCancelClicked(e);
     }
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_ScreenMain, LV_SCR_LOAD_ANIM_NONE, 0, 0);
-    }
 }
 void ui_event_Button11(lv_event_t * e)
 {
@@ -292,9 +289,6 @@ void ui_event_ButtonPinOK(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_CLICKED) {
         ButtonPinOKClicked(e);
-    }
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_ScreenConfig, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     }
 }
 void ui_event_TextAreaConfigSSID(lv_event_t * e)
