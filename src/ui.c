@@ -699,12 +699,13 @@ void ui_ScreenPin_screen_init(void)
     ui_LabelPINValue = lv_label_create(ui_ScreenPin);
     lv_obj_set_width(ui_LabelPINValue, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_LabelPINValue, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelPINValue, 70);
-    lv_obj_set_y(ui_LabelPINValue, 70);
-    lv_label_set_text(ui_LabelPINValue, "_____");
+    lv_obj_set_x(ui_LabelPINValue, 0);
+    lv_obj_set_y(ui_LabelPINValue, 80);
+    lv_obj_set_align(ui_LabelPINValue, LV_ALIGN_TOP_MID);
+    lv_label_set_text(ui_LabelPINValue, "ENTER PIN");
     lv_obj_set_style_text_color(ui_LabelPINValue, lv_color_hex(0x4D4D4E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelPINValue, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_letter_space(ui_LabelPINValue, 25, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(ui_LabelPINValue, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_line_space(ui_LabelPINValue, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(ui_LabelPINValue, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_LabelPINValue, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
