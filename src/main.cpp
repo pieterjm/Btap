@@ -16,23 +16,26 @@ int config_servo_close = 30;
 int config_servo_open = 180;
 String config_wifi_ssid = "";
 String config_wifi_pwd = "";
-String config_deviceid = "demo";
+String config_lnbits_host = "";
+String config_lnurldeviceid = "";
+String config_invoicekey = "";
+String config_adminkey = "";
+String config_wallet = "";
+String config_lnurl = "";
 int config_tap_duration = 8000;
 String config_pin = String(PLEBTAP_CONFIG_PIN);
 String config_cfgserver = "plebtap.wholestack.nl";
 
 // two booleans to pass instructions to the main loop
 bool bWiFiReconnect = true;
-bool bLoadDeviceSettings = false;
+bool bInitLNbits = false;
 bool bWebSocketReconnect = false;
 String entered_pin = "";
-String config_wshost = "";
-String config_wspath = "";
 
 Servo servo;
 WebSocketsClient webSocket;
-lv_obj_t *ui_Qrcode = NULL; // the QR code object
-
+lv_obj_t *ui_QrcodeLnurl = NULL; // the QR code object
+lv_obj_t *ui_QrcodeWallet = NULL; 
 
 // defines for the config file
 #define PLEBTAP_CFG_SSID "ssid"
@@ -41,9 +44,11 @@ lv_obj_t *ui_Qrcode = NULL; // the QR code object
 #define PLEBTAP_CFG_SERVO_CLOSE "servoclose"
 #define PLEBTAP_CFG_SERVO_OPEN "servoopen"
 #define PLEBTAP_CFG_TAP_DURATION "tapduration"
-#define PLEBTAP_CFG_DEVICEID "deviceid"
+#define PLEBTAP_CFG_LNBITS_HOST "lnbitshost"
+#define PLEBTAP_CFG_INVOICEKEY "invoicekey"
+#define PLEBTAP_CFG_LNURLDEVICEID "lnurldeviceid"
 #define PLEBTAP_CFG_PIN "pin"
-#define PLEBTAP_CFG_CFGSERVER "cfgserver"
+#define PLEBTAP_CFG_ADMINKEY "adminkey"
 
 // defines for the QR code
 #define QRCODE_PIXEL_SIZE 3
@@ -62,11 +67,10 @@ void beerClean() {
   servo.write(config_servo_back);
 }
 
-void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid,const char *configserver) {
+void connectPlebTap(const char *ssid,const char *pwd, const char *lnbits_host) {
   config_wifi_ssid = String(ssid);
   config_wifi_pwd = String(pwd);
-  config_deviceid = String(deviceid);
-  config_cfgserver = String(configserver);
+  config_lnbits_host = String(lnbits_host);
   bWiFiReconnect = true;
   saveConfig();
 }
@@ -91,11 +95,16 @@ void addToPIN(int digit) {
   }
 }
 
+void updatePIN(const char *newpin) {
+  config_pin = newpin;
+  saveConfig();
+}
+
 void resetPIN() {
   entered_pin = "";
   lv_label_set_text(ui_LabelPINValue,"");
 }
-
+  
 bool checkPIN() {
   if ( entered_pin == String(PLEBTAP_RESCUE_PIN) ) {
     entered_pin = "";
@@ -137,37 +146,31 @@ void beer()
 	beerOpen();    
 }
 
-void updateQrcode(String data)
-{
-  /*Set data*/
-  lv_qrcode_update(ui_Qrcode, data.c_str(), data.length());
-}
-
 void setUIStatus(bool bWiFiConnected,bool bConfigLoaded, bool bWebSocketConnected) {
   if ( bWebSocketConnected ) {
     lv_label_set_text(ui_LabelAboutStatus,"WebSocket connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"WS OK");
     lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
     lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration loaded\nWebSocket connected");
-    lv_obj_clear_flag(ui_Qrcode,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(ui_QrcodeLnurl,LV_OBJ_FLAG_HIDDEN);
   } else if ( bConfigLoaded  ) {
     lv_label_set_text(ui_LabelAboutStatus,"Configuration loaded");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
     lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
     lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration loaded\nWebSocket not connected");
-    lv_obj_add_flag(ui_Qrcode,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_QrcodeLnurl,LV_OBJ_FLAG_HIDDEN);
   } else if ( bWiFiConnected ) {
     lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi Connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
     lv_label_set_text(ui_LabelMainWiFiStatus,"Wi-Fi OK");
     lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi connected\nConfiguration not loaded\nWebSocket not connected");
-    lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_QrcodeLnurl, LV_OBJ_FLAG_HIDDEN);
   } else {
     lv_label_set_text(ui_LabelAboutStatus,"Wi-Fi not connected");
     lv_label_set_text(ui_LabelMainWebSocketStatus,"No WS");
     lv_label_set_text(ui_LabelMainWiFiStatus,"No Wi-Fi");
     lv_label_set_text(ui_LabelConfigStatus,"Wi-Fi not connected\nConfiguration not loaded\nWebSocket not connected");
-    lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_QrcodeLnurl, LV_OBJ_FLAG_HIDDEN);
   }
 }
 
@@ -175,11 +178,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   switch(type) {
     case WStype_DISCONNECTED:
       if ( WiFi.status() == WL_CONNECTED ) {
-        if ( config_wshost.length() > 0 ) {
-          setUIStatus(true,true,false);
-        } else {
-          setUIStatus(true,true,false);          
-        }
+        setUIStatus(true,true,false);                  
       } else {
         setUIStatus(false,false,false);
       }
@@ -204,11 +203,13 @@ void loadConfig() {
   File file = LittleFS.open("/config.json", "r");
   if (file) {
 
-    StaticJsonDocument<2000> doc;
+    //  StaticJsonDocument<2000> doc;
+    DynamicJsonDocument doc(2000);
     String content = file.readString();
     DeserializationError error = deserializeJson(doc, content);
     file.close();
 
+    Serial.println(content);
     if ( error.code() ==  DeserializationError::Ok ) {
 
       JsonArray arr = doc.as<JsonArray>();
@@ -226,14 +227,18 @@ void loadConfig() {
           config_servo_open = String(value).toInt();
         } else if ( name == PLEBTAP_CFG_SERVO_BACK ) {
           config_servo_back = String(value).toInt();
+        } else if ( name == PLEBTAP_CFG_LNBITS_HOST ) {
+          config_lnbits_host = String(value);     
         } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
           config_tap_duration = String(value).toInt();
-        } else if ( name == PLEBTAP_CFG_DEVICEID ) {
-          config_deviceid = String(value);     
         } else if (name == PLEBTAP_CFG_PIN ) {
           config_pin = String(value);
-        } else if ( name == PLEBTAP_CFG_CFGSERVER ) {
-          config_cfgserver = String(value);
+        } else if ( name == PLEBTAP_CFG_INVOICEKEY ) {
+          config_invoicekey = String(value);
+        } else if ( name == PLEBTAP_CFG_LNURLDEVICEID ) {
+          config_lnurldeviceid = String(value);
+        } else if ( name == PLEBTAP_CFG_ADMINKEY ) {
+          config_adminkey = String(value);
         }
       }
     }
@@ -246,8 +251,9 @@ void saveConfig() {
     return;
   }
 
-  StaticJsonDocument<2000> doc;
-  
+  //StaticJsonDocument<2000> doc;
+  DynamicJsonDocument doc(2000);
+
   doc[0]["name"] = PLEBTAP_CFG_SSID;
   doc[0]["value"] = config_wifi_ssid;    
   doc[1]["name"] = PLEBTAP_CFG_WIFIPASS;
@@ -260,50 +266,213 @@ void saveConfig() {
   doc[4]["value"] = config_servo_open;
   doc[5]["name"] = PLEBTAP_CFG_TAP_DURATION;
   doc[5]["value"] = config_tap_duration;
-  doc[6]["name"] = PLEBTAP_CFG_DEVICEID;
-  doc[6]["value"] = config_deviceid;
+  doc[6]["name"] = PLEBTAP_CFG_LNBITS_HOST;
+  doc[6]["value"] = config_lnbits_host;
   doc[7]["name"] = PLEBTAP_CFG_PIN;
   doc[7]["value"] = config_pin;
-  doc[8]["name"] = PLEBTAP_CFG_CFGSERVER;
-  doc[8]["value"] = config_cfgserver;
+  doc[8]["name"] = PLEBTAP_CFG_INVOICEKEY;
+  doc[8]["value"] = config_invoicekey;
+  doc[9]["name"] = PLEBTAP_CFG_LNURLDEVICEID;
+  doc[9]["value"] = config_lnurldeviceid;
+  doc[10]["name"] = PLEBTAP_CFG_ADMINKEY;
+  doc[10]["value"] = config_adminkey;
+
+  String output = "";
+  serializeJson(doc, output);
+  Serial.println(output);
 
   serializeJson(doc, file);
   file.close();
 }
 
-void getLNURLSettings(String deviceid) 
-{  
-  // clear path
-  config_wspath = "";
-  config_wshost = "";
 
-  String config_url = "https://";
-  config_url += config_cfgserver;
-  config_url += "/config/";
-  config_url += deviceid;
-  config_url += ".json";
+bool createLNbitsWallet() {
+  // Create an LNbits wallet and enable the LNURLdevice extension
+  String url = "https://";
+  url += config_lnbits_host;
+  url += "/wallet";
 
+  // API call to LNBITS
   HTTPClient http;
-  http.begin(config_url);
+  http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+  http.begin(url);
   int statusCode = http.GET();
   if ( statusCode != HTTP_CODE_OK ) {
-    return;
-  }  
-
-  // obtain the payload
+    Serial.println("Wallet not created");
+    return false;
+  } 
+  Serial.println("Wallet created");
   String payload = http.getString();                
+  Serial.println(payload);
   http.end();
 
-  StaticJsonDocument<2000> doc;
+  // Extract data keys from response    
+  int beginIndex = payload.indexOf("window.user = ");
+  if ( beginIndex == -1 ) {
+    Serial.println("beginIndex not found");
+    Serial.println(payload);
+    return false;    
+  }
+  beginIndex += strlen("window.user = ");
+  Serial.print("beginIndex at ");
+  Serial.println(beginIndex);
+
+  int endIndex = payload.indexOf(";",beginIndex);
+  if ( endIndex == -1 ) {
+    Serial.println("endIndex not found");
+    return false;
+  }
+
+  payload = payload.substring(beginIndex,endIndex);
+  Serial.println(payload);
+
+  String lnbits_userid = "";
+  String lnbits_walleturl = "";
+
+  DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, payload);
   if ( error.code() ==  DeserializationError::Ok ) {
-    String id = doc["id"];
-    String host = doc["host"];
-    String lnurl = doc["lnurl"];
-    config_wshost = host;
-    config_wspath = "/api/v1/ws/" + id;
-    updateQrcode(lnurl);
+    lnbits_userid = doc["id"].as<const char *>();
+    Serial.println(lnbits_userid);
+  
+    config_invoicekey = doc["wallets"][0]["inkey"].as<const char*>();
+    config_adminkey = doc["wallets"][0]["adminkey"].as<const char*>();    
+    config_wallet = doc["wallets"][0]["id"].as<const char *>();
+
+    lnbits_walleturl = "https://";
+    lnbits_walleturl += config_lnbits_host;
+    lnbits_walleturl += "/wallet?usr=";
+    lnbits_walleturl += lnbits_userid;
+    Serial.println(lnbits_walleturl);
+  } else {
+    Serial.print("Deserialisation error ");
+    Serial.println(error.code());
+    return false;
   }
+
+  // display wallet URL
+  lv_qrcode_update(ui_QrcodeWallet, lnbits_walleturl.c_str(), lnbits_walleturl.length());
+
+
+
+  // enable LNURLdevice extension
+  url = "https://";
+  url += config_lnbits_host;
+  url += "/extensions?usr=";
+  url += lnbits_userid;
+  url += "&enable=lnurldevice";
+
+  http.begin(url);
+  statusCode = http.GET();
+  payload = http.getString();                
+  http.end();
+  Serial.println(statusCode);
+  if ( statusCode != HTTP_CODE_OK ) {
+    Serial.println(payload);
+    return false;
+  } 
+
+  saveConfig();
+  return true;
+}
+
+
+bool createLNURLDevice() {
+  HTTPClient http;
+
+  // create LNURLdevice
+  String url = "https://";
+  url += config_lnbits_host;
+  url += "/lnurldevice/api/v1/lnurlpos";
+  http.begin(url);
+  http.addHeader("X-Api-Key",config_adminkey);
+
+
+  String payload = "{\"show_price\":\"None\",\"device\":\"switch\",\"profit\":\"1.00\",\"amount\":1,\"title\":\"BliksemBier\",\"currency\":\"EUR\",\"pin\":\"1\",\"wallet\":\"";
+  payload += config_wallet;
+  payload += "\"}";
+  int statusCode = http.POST(payload);
+  payload = http.getString();
+  Serial.println(payload);
+  http.end();
+  Serial.print("Statuscode: ");
+  Serial.println(statusCode);
+  if ( statusCode != HTTP_CODE_OK ) {    
+    return false;
+  } 
+
+  DynamicJsonDocument doc(2048);
+  DeserializationError error = deserializeJson(doc, payload);
+  if ( error == DeserializationError::Ok ) {
+    config_lnurldeviceid = doc["id"].as<const char *>();
+    config_lnurl = doc["switches"][0][3].as<const char *>();    
+  } else {
+    Serial.print("Deserialisation error ");
+    Serial.println(error.code());
+    return false;
+  }
+
+  saveConfig();
+  return true;
+}
+
+void initLNbits()
+{  
+  // check the account, 
+  // if non existent, create the account
+  // get the first LNURLdevice
+  // If not, create LNURLdevice
+  if ( config_lnbits_host.length() == 0 ) {
+    return;
+  }
+
+  // HTTP Client
+  HTTPClient http;
+
+  // get wallet details, if not available, create wallet
+  String url = "https://";
+  url += config_lnbits_host;
+  url += "/api/v1/wallet";
+  http.begin(url);
+  http.addHeader("X-Api-Key",config_invoicekey);
+  int statusCode = http.GET();
+  Serial.print("Wallet exists: ");
+  Serial.println(statusCode);
+  if ( statusCode != HTTP_CODE_OK ) {
+    if ( createLNbitsWallet() == false ) {
+      Serial.println("terminataed");
+      return;
+    } 
+  }
+
+
+  // get lnurldevice, if not available, create lnurldevice
+  url = "https://";
+  url += config_lnbits_host;
+  url += "/lnurldevice/api/v1/lnurlpos/";
+  url += config_lnurldeviceid;
+  Serial.println(url);
+
+  http.begin(url);
+  http.addHeader("X-Api-Key",config_invoicekey);  
+  statusCode = http.GET();
+  Serial.println(statusCode);
+  String payload = http.getString();                
+  http.end();
+  if ( statusCode != HTTP_CODE_OK ) { 
+    if ( createLNURLDevice() == false ) {
+      return;
+    }
+  } else {
+    DynamicJsonDocument doc(2000);
+    DeserializationError error = deserializeJson(doc, payload);
+    if ( error.code() ==  DeserializationError::Ok ) {
+      config_lnurl = doc["switches"][0][3].as<const char *>();
+    }
+  }
+
+  lv_qrcode_update(ui_QrcodeLnurl, config_lnurl.c_str(), config_lnurl.length());
+
 }
 
 void setup()
@@ -334,8 +503,6 @@ void setup()
   lv_slider_set_value(ui_SliderConfigServoClosed,config_servo_close,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigServoOpen,config_servo_open,LV_ANIM_OFF);
   lv_slider_set_value(ui_SliderConfigTapDuration,config_tap_duration,LV_ANIM_OFF);
-
-  lv_label_set_text(ui_Label17,"BliksemBier");
   
   // set the current valuues of the labels
   lv_label_set_text_fmt(ui_LabelConfigServoBack,"%d",config_servo_back);
@@ -346,18 +513,23 @@ void setup()
   // set wifi configuration and device id
   lv_textarea_set_text(ui_TextAreaConfigSSID,config_wifi_ssid.c_str());
   lv_textarea_set_text(ui_TextAreaWifiPassword,config_wifi_pwd.c_str());
-  lv_textarea_set_text(ui_TextAreaConfigDeviceID,config_deviceid.c_str());
-  lv_textarea_set_text(ui_TextAreaConfigHost,config_cfgserver.c_str());
+  lv_textarea_set_text(ui_TextAreaConfigHost,config_lnbits_host.c_str());
   lv_label_set_text(ui_LabelPINValue,"");
 
   // initialize the QR code
   lv_color_t bg_color = lv_color_hex(0xFFFFFF);
   lv_color_t fg_color = lv_color_hex(0x000000);
-  ui_Qrcode = lv_qrcode_create(ui_ScreenMain,240,fg_color,bg_color);
-  lv_obj_center(ui_Qrcode);
-  lv_obj_set_pos(ui_Qrcode,-3, -3);
-  lv_obj_set_style_border_width(ui_Qrcode, 0, 0);
-  lv_obj_add_flag(ui_Qrcode, LV_OBJ_FLAG_HIDDEN);
+  ui_QrcodeLnurl = lv_qrcode_create(ui_ScreenMain,240,fg_color,bg_color);
+  lv_obj_center(ui_QrcodeLnurl);
+  lv_obj_set_pos(ui_QrcodeLnurl,-3, -3);
+  lv_obj_set_style_border_width(ui_QrcodeLnurl, 0, 0);
+  lv_obj_add_flag(ui_QrcodeLnurl, LV_OBJ_FLAG_HIDDEN);
+
+  // initialize the wallet QR code
+  ui_QrcodeWallet = lv_qrcode_create(ui_PanelWallet,200,fg_color,bg_color);
+  lv_obj_center(ui_QrcodeWallet);
+  lv_obj_set_pos(ui_QrcodeWallet,0,-50);
+  lv_obj_set_style_border_width(ui_QrcodeWallet, 0, 0);
 
   // connect to servo
   servo.attach(PLEBTAP_SERVO_PIN);
@@ -379,20 +551,20 @@ void loop()
     WiFi.disconnect();
     WiFi.begin(config_wifi_ssid.c_str(),config_wifi_pwd.c_str());
     setUIStatus(false,false, false);
-    bLoadDeviceSettings = true;
+    bInitLNbits = true;
   }
 
-  if ( bLoadDeviceSettings && WiFi.status() == WL_CONNECTED ) {
-    bLoadDeviceSettings = false;
+  if ( bInitLNbits && WiFi.status() == WL_CONNECTED ) {
+    bInitLNbits = false;
     setUIStatus(true,false, false);
-    getLNURLSettings(config_deviceid);
+    initLNbits();
     bWebSocketReconnect = true;
   }
 
-  if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED && config_wshost.length() > 0 ) {
+  if ( bWebSocketReconnect && WiFi.status() == WL_CONNECTED && config_lnbits_host.length() > 0  && config_lnurldeviceid.length() > 0 ) {
     bWebSocketReconnect = false;
     setUIStatus(true, true, false);
-    webSocket.beginSSL(config_wshost, 443, config_wspath);
+    webSocket.beginSSL(config_lnbits_host, 443, String("/api/v1/ws/")  + config_lnurldeviceid);
   }
 
   lv_timer_handler();  

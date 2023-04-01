@@ -85,9 +85,52 @@ void ButtonConfigConnectClicked(lv_event_t * e)
 	// Your code here
 	const char *ssid = lv_textarea_get_text(ui_TextAreaConfigSSID);
 	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);
-	const char *deviceid = lv_textarea_get_text(ui_TextAreaConfigDeviceID);
-	const char *cfgserver = lv_textarea_get_text(ui_TextAreaConfigHost);
-	connectPlebTap(ssid,pwd,deviceid,cfgserver);
+	const char *lnbits_host = lv_textarea_get_text(ui_TextAreaConfigHost);
+	connectPlebTap(ssid,pwd,lnbits_host);
+}
+
+void ButtonOKPINClicked(lv_event_t * e)
+{
+	// Your code here
+	const char *currentPIN = lv_textarea_get_text(ui_TextAreaConfigPINCurrent);
+	const char *newPIN = lv_textarea_get_text(ui_TextAreaConfigPINNew);
+	const char *repeatPIN = lv_textarea_get_text(ui_TextAreaConfigPINRepeat);
+
+
+
+	if ( checkPIN(currentPIN) == false ) {
+		lv_label_set_text(ui_LabelConfigPINMessage,"Current PIN incorrect");
+		return;
+	}
+
+	if ( strlen(newPIN) != 6 ) {
+		lv_label_set_text(ui_LabelConfigPINMessage,"PIN must be 6 characters");
+		return;	
+	}
+
+	if ( strncmp(newPIN,repeatPIN,6) != 0 ) {
+		lv_label_set_text(ui_LabelConfigPINMessage,"New PIN not equal");
+		return;	
+	}
+
+	updatePIN(newPIN);
+
+	// Your code here
+	lv_textarea_set_text(ui_TextAreaConfigPINCurrent,"");
+	lv_textarea_set_text(ui_TextAreaConfigPINNew,"");
+	lv_textarea_set_text(ui_TextAreaConfigPINRepeat,"");
+	lv_label_set_text(ui_LabelConfigPINMessage,"");
+	lv_obj_add_flag(ui_PanelConfigPIN,LV_OBJ_FLAG_HIDDEN);
+}
+
+void ButtoCancelPINClicked(lv_event_t * e)
+{
+	// Your code here
+	lv_textarea_set_text(ui_TextAreaConfigPINCurrent,"");
+	lv_textarea_set_text(ui_TextAreaConfigPINNew,"");
+	lv_textarea_set_text(ui_TextAreaConfigPINRepeat,"");
+	lv_label_set_text(ui_LabelConfigPINMessage,"");
+	lv_obj_add_flag(ui_PanelConfigPIN,LV_OBJ_FLAG_HIDDEN);
 }
 
 void ButtonConfigCleanClicked(lv_event_t * e)
@@ -102,7 +145,6 @@ void ButtonConfigCloseClicked(lv_event_t * e)
 	beerClose();
 }
 
-
 void ButtonConfigOpenClicked(lv_event_t * e)
 {
 	// Your code here
@@ -116,12 +158,18 @@ void ButtonConfigSaveClicked(lv_event_t * e)
 	int32_t servoClosed = lv_slider_get_value(ui_SliderConfigServoClosed);
 	int32_t servoOpen = lv_slider_get_value(ui_SliderConfigServoOpen);
 	int32_t tapDuration = lv_slider_get_value(ui_SliderConfigTapDuration);
-	saveTuning(servoBack,servoClosed,servoOpen,tapDuration);
+	saveTuning(servoBack,servoClosed,servoOpen,tapDuration);	
 }
 
 void ButtonBierFlowingStop(lv_event_t * e)
 {
 	// Your code here
 	beerClose();
+}
+
+void ButtonConfigWalletClicked(lv_event_t * e)
+{
+	// Your code here
+	lv_obj_clear_flag(ui_PanelWallet,LV_OBJ_FLAG_HIDDEN);
 }
 
