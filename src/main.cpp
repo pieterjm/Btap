@@ -9,6 +9,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
+
 // config variables
 int config_servo_back = 10;
 int config_servo_close = 30;
@@ -18,7 +19,7 @@ String config_wifi_pwd = "";
 String config_deviceid = "demo";
 int config_tap_duration = 8000;
 String config_pin = String(PLEBTAP_CONFIG_PIN);
-String config_cfgserver = "plebtab.wholestack.nl";
+String config_cfgserver = "plebtap.wholestack.nl";
 
 // two booleans to pass instructions to the main loop
 bool bWiFiReconnect = true;
