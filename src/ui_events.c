@@ -77,6 +77,8 @@ void ButtonPinOKClicked(lv_event_t * e)
 	// Your code here
 	if ( checkPIN() == true ) {
 		lv_disp_load_scr(ui_ScreenConfig);	
+	} else {
+		lv_label_set_text(ui_LabelPINValue,"");
 	}
 }
 
@@ -85,8 +87,9 @@ void ButtonConfigConnectClicked(lv_event_t * e)
 	// Your code here
 	const char *ssid = lv_textarea_get_text(ui_TextAreaConfigSSID);
 	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);
-	const char *lnbits_host = lv_textarea_get_text(ui_TextAreaConfigHost);
-	connectPlebTap(ssid,pwd,lnbits_host);
+	const char *deviceid = lv_textarea_get_text(ui_TextAreaConfigDeviceID);
+	const char *cfgserver = lv_textarea_get_text(ui_TextAreaConfigHost);
+	connectPlebTap(ssid,pwd,deviceid,cfgserver);
 }
 
 void ButtonOKPINClicked(lv_event_t * e)
@@ -167,9 +170,4 @@ void ButtonBierFlowingStop(lv_event_t * e)
 	beerClose();
 }
 
-void ButtonConfigWalletClicked(lv_event_t * e)
-{
-	// Your code here
-	lv_obj_clear_flag(ui_PanelWallet,LV_OBJ_FLAG_HIDDEN);
-}
 
