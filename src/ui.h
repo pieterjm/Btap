@@ -158,12 +158,6 @@ extern lv_obj_t * ui_SliderConfigTapDuration;
 void ui_event_ButtonConfigSave(lv_event_t * e);
 extern lv_obj_t * ui_ButtonConfigSave;
 extern lv_obj_t * ui_Label11;
-void ui_event_ScreenBierFlowing(lv_event_t * e);
-extern lv_obj_t * ui_ScreenBierFlowing;
-extern lv_obj_t * ui_Panel4;
-extern lv_obj_t * ui_Label27;
-extern lv_obj_t * ui_Image3;
-extern lv_obj_t * ui_BarBeerProgress;
 
 void ButtonPinOneClicked(lv_event_t * e);
 void ButtonPinTwoClicked(lv_event_t * e);
@@ -184,11 +178,9 @@ void ButtonConfigCleanClicked(lv_event_t * e);
 void ButtonConfigCloseClicked(lv_event_t * e);
 void ButtonConfigOpenClicked(lv_event_t * e);
 void ButtonConfigSaveClicked(lv_event_t * e);
-void ButtonBierFlowingStop(lv_event_t * e);
 
 LV_IMG_DECLARE(ui_img_kanhetal256_png);    // assets/kanhetal256.png
 LV_IMG_DECLARE(ui_img_329557545);    // assets/qr-code-slagschaduw-274x274-v2.png
-LV_IMG_DECLARE(ui_img_biertap256_png);    // assets/biertap256.png
 
 
 LV_FONT_DECLARE(ui_font_FontBoucherieBlock24);
