@@ -2,7 +2,7 @@
 
 ## Configuration 
 
-The basic configuration of the beertap is done through the userinterface of the device by clicking on the 'Config' button on the main screen. 
+The basic configuration of the beertap is done through the userinterface of the device by clicking on the 'Config' button on the main screen. The default PIN for the config is '123456'.
 
 As connecting to LNbits requires to enter a long identifiers and LNURLs an additional helper file is required. This file cbontains configuration details of the WebSocket URL and the payment LNURL. Use the following steps to create such a file:
 
