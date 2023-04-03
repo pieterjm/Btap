@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <esp32_smartdisplay.h>
-#include "plebtap.h"
+#include "bliksembier.h"
 #include "ui.h"
 #include <ESP32Servo.h>
 #include <WebSocketsClient.h>
@@ -11,9 +11,9 @@
 
 
 // config variables
-int config_servo_back = 10;
-int config_servo_close = 30;
-int config_servo_open = 180;
+int config_servo_back = 180;
+int config_servo_close = 180;
+int config_servo_open = 70;
 String config_wifi_ssid = "";
 String config_wifi_pwd = "";
 String config_lnurldeviceid = "";
@@ -39,15 +39,15 @@ lv_obj_t *ui_QrcodeLnurl = NULL; // the QR code object
 lv_obj_t *ui_QrcodeWallet = NULL; 
 
 // defines for the config file
-#define PLEBTAP_CFG_SSID "ssid"
-#define PLEBTAP_CFG_WIFIPASS "wifipassword"
-#define PLEBTAP_CFG_SERVO_BACK "servoback"
-#define PLEBTAP_CFG_SERVO_CLOSE "servoclose"
-#define PLEBTAP_CFG_SERVO_OPEN "servoopen"
-#define PLEBTAP_CFG_TAP_DURATION "tapduration"
-#define PLEBTAP_CFG_CFGSERVER "cfgserver"
-#define PLEBTAP_CFG_DEVICEID "deviceid"
-#define PLEBTAP_CFG_PIN "pin"
+#define BLIKSEMBIER_CFG_SSID "ssid"
+#define BLIKSEMBIER_CFG_WIFIPASS "wifipassword"
+#define BLIKSEMBIER_CFG_SERVO_BACK "servoback"
+#define BLIKSEMBIER_CFG_SERVO_CLOSE "servoclose"
+#define BLIKSEMBIER_CFG_SERVO_OPEN "servoopen"
+#define BLIKSEMBIER_CFG_TAP_DURATION "tapduration"
+#define BLIKSEMBIER_CFG_CFGSERVER "cfgserver"
+#define BLIKSEMBIER_CFG_DEVICEID "deviceid"
+#define BLIKSEMBIER_CFG_PIN "pin"
 
 // defines for the QR code
 #define QRCODE_PIXEL_SIZE 3
@@ -66,7 +66,7 @@ void beerClean() {
   servo.write(config_servo_back);
 }
 
-void connectPlebTap(const char *ssid,const char *pwd, const char *deviceid,const char *configserver) {
+void connectBliksemBier(const char *ssid,const char *pwd, const char *deviceid,const char *configserver) {
   config_wifi_ssid = String(ssid);
   config_wifi_pwd = String(pwd);
   config_deviceid = String(deviceid);
@@ -205,23 +205,23 @@ void loadConfig() {
         String name = obj["name"];
         String value = obj["value"];
 
-        if ( name == PLEBTAP_CFG_SSID ) {
+        if ( name == BLIKSEMBIER_CFG_SSID ) {
           config_wifi_ssid = String(value);
-        } else if ( name == PLEBTAP_CFG_WIFIPASS ) {
+        } else if ( name == BLIKSEMBIER_CFG_WIFIPASS ) {
           config_wifi_pwd = String(value);
-        } else if ( name == PLEBTAP_CFG_SERVO_CLOSE ) {
+        } else if ( name == BLIKSEMBIER_CFG_SERVO_CLOSE ) {
           config_servo_close = String(value).toInt();
-        } else if ( name == PLEBTAP_CFG_SERVO_OPEN ) {
+        } else if ( name == BLIKSEMBIER_CFG_SERVO_OPEN ) {
           config_servo_open = String(value).toInt();
-        } else if ( name == PLEBTAP_CFG_SERVO_BACK ) {
+        } else if ( name == BLIKSEMBIER_CFG_SERVO_BACK ) {
           config_servo_back = String(value).toInt();
-        } else if ( name == PLEBTAP_CFG_CFGSERVER ) {
+        } else if ( name == BLIKSEMBIER_CFG_CFGSERVER ) {
           config_cfgserver = String(value);     
-        } else if ( name == PLEBTAP_CFG_TAP_DURATION ) {
+        } else if ( name == BLIKSEMBIER_CFG_TAP_DURATION ) {
           config_tap_duration = String(value).toInt();
-        } else if (name == PLEBTAP_CFG_PIN ) {
+        } else if (name == BLIKSEMBIER_CFG_PIN ) {
           config_pin = String(value);
-        } else if ( name == PLEBTAP_CFG_DEVICEID ) {
+        } else if ( name == BLIKSEMBIER_CFG_DEVICEID ) {
           config_deviceid = String(value);
         }
       }
@@ -238,23 +238,23 @@ void saveConfig() {
   //StaticJsonDocument<2000> doc;
   DynamicJsonDocument doc(2000);
 
-  doc[0]["name"] = PLEBTAP_CFG_SSID;
+  doc[0]["name"] = BLIKSEMBIER_CFG_SSID;
   doc[0]["value"] = config_wifi_ssid;    
-  doc[1]["name"] = PLEBTAP_CFG_WIFIPASS;
+  doc[1]["name"] = BLIKSEMBIER_CFG_WIFIPASS;
   doc[1]["value"]= config_wifi_pwd;
-  doc[2]["name"] = PLEBTAP_CFG_SERVO_BACK;
+  doc[2]["name"] = BLIKSEMBIER_CFG_SERVO_BACK;
   doc[2]["value"] = config_servo_back;
-  doc[3]["name"] = PLEBTAP_CFG_SERVO_CLOSE;
+  doc[3]["name"] = BLIKSEMBIER_CFG_SERVO_CLOSE;
   doc[3]["value"] = config_servo_close;
-  doc[4]["name"] = PLEBTAP_CFG_SERVO_OPEN;
+  doc[4]["name"] = BLIKSEMBIER_CFG_SERVO_OPEN;
   doc[4]["value"] = config_servo_open;
-  doc[5]["name"] = PLEBTAP_CFG_TAP_DURATION;
+  doc[5]["name"] = BLIKSEMBIER_CFG_TAP_DURATION;
   doc[5]["value"] = config_tap_duration;
-  doc[6]["name"] = PLEBTAP_CFG_CFGSERVER;
+  doc[6]["name"] = BLIKSEMBIER_CFG_CFGSERVER;
   doc[6]["value"] = config_cfgserver;
-  doc[7]["name"] = PLEBTAP_CFG_PIN;
+  doc[7]["name"] = BLIKSEMBIER_CFG_PIN;
   doc[7]["value"] = config_pin;
-  doc[8]["name"] = PLEBTAP_CFG_DEVICEID;
+  doc[8]["name"] = BLIKSEMBIER_CFG_DEVICEID;
   doc[8]["value"] = config_deviceid;
 
   String output = "";

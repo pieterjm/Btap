@@ -4,7 +4,7 @@
 // PROJECT: SquareLine_Project4
 
 #include "ui.h"
-#include "plebtap.h"
+#include "bliksembier.h"
 #include <WString.h>
 
 String entered_pin = "";
@@ -78,6 +78,9 @@ void ButtonPinNineClicked(lv_event_t * e)
 void ButtonPinCancelClicked(lv_event_t * e)
 {
 	// Your code here
+	if ( entered_pin.length() == 0 ) {
+		lv_disp_load_scr(ui_ScreenMain);		
+	}
 	entered_pin = "";
 	lv_label_set_text(ui_LabelPINValue,"ENTER PIN");
 }
@@ -108,7 +111,7 @@ void ButtonConfigConnectClicked(lv_event_t * e)
 	const char *pwd = lv_textarea_get_text(ui_TextAreaWifiPassword);
 	const char *deviceid = lv_textarea_get_text(ui_TextAreaConfigDeviceID);
 	const char *cfgserver = lv_textarea_get_text(ui_TextAreaConfigHost);
-	connectPlebTap(ssid,pwd,deviceid,cfgserver);
+	connectBliksemBier(ssid,pwd,deviceid,cfgserver);
 }
 
 void ButtonOKPINClicked(lv_event_t * e)
