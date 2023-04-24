@@ -186,7 +186,8 @@ void ButtonConfigOpenClicked(lv_event_t * e);
 void ButtonConfigSaveClicked(lv_event_t * e);
 void ButtonScreenBierFlowingClicked(lv_event_t * e);
 
-LV_IMG_DECLARE(ui_img_kanhetal256_png);    // assets/kanhetal256.png
+//LV_IMG_DECLARE(ui_img_kanhetal256_png);    // assets/kanhetal256.png
+LV_IMG_DECLARE(ui_img_1898_logo256_png);
 LV_IMG_DECLARE(ui_img_329557545);    // assets/qr-code-slagschaduw-274x274-v2.png
 LV_IMG_DECLARE(ui_img_biertap256_png);    // assets/biertap256.png
 
