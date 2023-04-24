@@ -542,7 +542,7 @@ void ui_ScreenAbout_screen_init(void)
     lv_obj_set_width(ui_Label17, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label17, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_align(ui_Label17, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label17, "BLIKSEMBIER");
+    lv_label_set_text(ui_Label17, BB_NAME);
     lv_obj_set_style_text_color(ui_Label17, lv_color_hex(BB_FGCOLOR), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label17, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_Label17, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);

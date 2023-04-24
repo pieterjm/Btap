@@ -318,7 +318,6 @@ void setup()
   rgb.full = lv_color_to32(c);
   smartdisplay_set_led_color(rgb);
 
-
   // set UI components from config
   loadConfig();
 
