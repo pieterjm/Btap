@@ -159,6 +159,9 @@ lv_obj_t * ui_Panel4;
 lv_obj_t * ui_Label42;
 lv_obj_t * ui_Image3;
 lv_obj_t * ui_BarBierProgress;
+lv_obj_t * ui_ButtonBierStart;
+lv_obj_t * ui_Label45;
+void ui_event_ButtonBierStart(lv_event_t * e);
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
@@ -518,6 +521,15 @@ void ui_event_ScreenBierFlowing(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_CLICKED) {
         ButtonScreenBierFlowingClicked(e);
+    }
+}
+
+void ui_event_ButtonBierStart(lv_event_t *e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        ButtonBierStartClicked(e);
     }
 }
 
@@ -1639,6 +1651,26 @@ void ui_ScreenBierFlowing_screen_init(void)
     lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
+    ui_ButtonBierStart = lv_btn_create(ui_ScreenBierFlowing);
+    lv_obj_set_width(ui_ButtonBierStart, 160);
+    lv_obj_set_height(ui_ButtonBierStart, 50);
+    lv_obj_set_x(ui_ButtonBierStart, 0);
+    lv_obj_set_y(ui_ButtonBierStart, -60);
+    lv_obj_set_align(ui_ButtonBierStart, LV_ALIGN_BOTTOM_MID);
+    lv_obj_add_flag(ui_ButtonBierStart, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonBierStart, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonBierStart, lv_color_hex(BB_BGCOLOR), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonBierStart, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label45 = lv_label_create(ui_ButtonBierStart);
+    lv_obj_set_width(ui_Label45, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label45, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label45, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label45, "START");
+    lv_obj_set_style_text_color(ui_Label45, lv_color_hex(BB_FGCOLOR), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label45, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label45, &ui_font_FontBoucherieBlock24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     ui_BarBierProgress = lv_bar_create(ui_ScreenBierFlowing);
     lv_bar_set_value(ui_BarBierProgress, 25, LV_ANIM_OFF);
     lv_obj_set_width(ui_BarBierProgress, 260);
@@ -1651,10 +1683,12 @@ void ui_ScreenBierFlowing_screen_init(void)
     lv_obj_set_style_border_color(ui_BarBierProgress, lv_color_hex(BB_BGCOLOR), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_BarBierProgress, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_BarBierProgress, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_BarBierProgress,LV_OBJ_FLAG_HIDDEN);
 
     lv_obj_set_style_bg_color(ui_BarBierProgress, lv_color_hex(BB_BGCOLOR), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_BarBierProgress, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
 
+    lv_obj_add_event_cb(ui_ButtonBierStart, ui_event_ButtonBierStart, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ScreenBierFlowing, ui_event_ScreenBierFlowing, LV_EVENT_ALL, NULL);
 
 }

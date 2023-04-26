@@ -192,3 +192,7 @@ void ButtonScreenBierFlowingClicked(lv_event_t * e)
 }
 
 
+void ButtonBierStartClicked(lv_event_t *e ) 
+{
+	beerStart();
+}

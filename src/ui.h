@@ -164,6 +164,10 @@ extern lv_obj_t * ui_Panel4;
 extern lv_obj_t * ui_Label42;
 extern lv_obj_t * ui_Image3;
 extern lv_obj_t * ui_BarBierProgress;
+extern lv_obj_t * ui_ButtonBierStart;
+extern lv_obj_t * ui_Label45;
+void ui_event_ButtonBierStart(lv_event_t * e);
+
 
 void ButtonPinOneClicked(lv_event_t * e);
 void ButtonPinTwoClicked(lv_event_t * e);
@@ -185,6 +189,7 @@ void ButtonConfigCloseClicked(lv_event_t * e);
 void ButtonConfigOpenClicked(lv_event_t * e);
 void ButtonConfigSaveClicked(lv_event_t * e);
 void ButtonScreenBierFlowingClicked(lv_event_t * e);
+void ButtonBierStartClicked(lv_event_t * e);
 
 //LV_IMG_DECLARE(ui_img_kanhetal256_png);    // assets/kanhetal256.png
 LV_IMG_DECLARE(ui_img_1898_logo256_png);

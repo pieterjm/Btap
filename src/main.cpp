@@ -125,13 +125,21 @@ void beerTimerProgress(lv_timer_t * timer)
   }
 } 
 
-void beer()
+void beerScreen()
 {
+  lv_obj_add_flag(ui_BarBierProgress,LV_OBJ_FLAG_HIDDEN);
+	lv_obj_clear_flag(ui_ButtonBierStart,LV_OBJ_FLAG_HIDDEN);
   lv_bar_set_value(ui_BarBierProgress,0,LV_ANIM_OFF);
 	lv_disp_load_scr(ui_ScreenBierFlowing);	
 	//lv_timer_t *timer = lv_timer_create(beerTimerFinished, config_tap_duration, NULL);
+}
+
+void beerStart()
+{
   lv_timer_t *timer = lv_timer_create(beerTimerProgress, config_tap_duration / 10, NULL);
   lv_timer_set_repeat_count(timer,10);
+  lv_obj_add_flag(ui_ButtonBierStart,LV_OBJ_FLAG_HIDDEN);
+	lv_obj_clear_flag(ui_BarBierProgress,LV_OBJ_FLAG_HIDDEN);
 	beerOpen();    
 }
 
@@ -177,7 +185,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       setUIStatus(true,true,true);
       break;
     case WStype_TEXT:
-      beer();
+      beerScreen();
       break;
     default:
 			break;
@@ -317,7 +325,7 @@ void setup()
   lv_color32_t rgb;
   rgb.full = lv_color_to32(c);
   smartdisplay_set_led_color(rgb);
-
+  smartdisplay_tft_set_backlight(BB_TFT_INTENSITY);
   // set UI components from config
   loadConfig();
 

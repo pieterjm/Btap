@@ -16,7 +16,9 @@ void beerClose();
 
 void beerClean();
 
-void beer();
+void beerScreen();
+
+void beerStart();
 
 void connectBliksemBier(const char *ssid,const char *pwd, const char *deviceid,const char *configserver);
 
