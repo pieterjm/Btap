@@ -111,9 +111,9 @@ bool getWebSocketStatus() {
   return webSocket.isConnected();
 }
 
-void backToMain(lv_timer_t * timer)
+void backToAbout(lv_timer_t * timer)
 {
-  lv_disp_load_scr(ui_ScreenMain);	  
+  lv_disp_load_scr(ui_ScreenAbout);	  
 }
 
 void beerTimerProgress(lv_timer_t * timer)
@@ -128,7 +128,7 @@ void beerTimerProgress(lv_timer_t * timer)
   if ( progress >=  100 ) {
     beerClose();
 
-    lv_timer_t *timer = lv_timer_create(backToMain, 3000, NULL);
+    lv_timer_t *timer = lv_timer_create(backToAbout, 3000, NULL);
     lv_obj_add_flag(ui_BarBierProgress,LV_OBJ_FLAG_HIDDEN);
     lv_timer_set_repeat_count(timer,1);
 
