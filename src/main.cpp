@@ -11,12 +11,12 @@
 #include <HttpsOTAUpdate.h>
 
 // config variables
-int config_servo_back = 180;
-int config_servo_close = 180;
-int config_servo_open = 70;
+int config_servo_back = 0;
+int config_servo_close = 53;
+int config_servo_open = 111;
 String config_wifi_ssid = "";
 String config_wifi_pwd = "";
-int config_tap_duration = 8000;
+int config_tap_duration = 11000;
 int tap_duration = 0;
 String config_pin = String(CONFIG_PIN);
 String config_lnbitshost = "lnbits.meulenhoff.org";
@@ -195,7 +195,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         } else {
           tap_duration = data.substring(idx + 1).toInt();
         }
-        Serial.println(tap_duration);
       }
       beerScreen();
       break;
@@ -383,10 +382,7 @@ void setup()
   Serial.begin(115200);
   delay(2000);
 
-
-
   LittleFS.begin(true);
-
 
   smartdisplay_init();
   ui_init();
