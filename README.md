@@ -6,15 +6,18 @@ The basic configuration of the beertap is done through the userinterface of the 
 
 Take the following steps to configure the device:
 
-1. Create a wallet at https://lnbits.meulenhoff.org and add the LNURLdevice extension to the wallet. Other LNbits servers will not work.
-2. Create an LNURLDevice in LNbits. Add a 'Switch', set the correct price and the correct duration. You can add up to three distinct switches.
-3. Record the following data of the LNURLdevice (8 charachters).
-4. On the tap device, enter config. 
+1. Create a wallet at https://lnbits.meulenhoff.org and add the LNURLdevice extension to the wallet.
+2. In LNbits, create an LNURLDevice by clicking 'NEW LNURLDEVICE INSTANCE'. 
+3. Configure the LNURLDevice, make sure that the type is set to 'Switch'.
+4. Add one or more (max three) switches by clicking on the '+' button. Configure price, duration and Label for each switch. 
+  * The duration is the amount of milliseconds, the tap is switched on.
+  * The Label button is displayed on the tap. For instance 'Small' or 'Large'.
+5. Click 'CREATE LNURLDEVICE' and record the ID of the LNURLdevice (8 charachters).
+6. On the tap device, enter config. 
   - Make sure that LNbits host is set to: lnbits.meulenhoff.org
   - Set 'Device ID' to the ID of the LNURL device. 
-5. Click connect. 
+7. Click connect. 
   
-
 ## Compilation
 
 BliksemBier is created with platform.io. 
