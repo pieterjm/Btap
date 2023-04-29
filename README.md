@@ -1,38 +1,19 @@
 
-
 ## Configuration 
 
-The basic configuration of the beertap is done through the userinterface of the device by clicking on the 'Config' button on the main screen. The default PIN for the config is '123456'.
-
-As connecting to LNbits requires to enter a long identifiers and LNURLs an additional helper file is required. This file cbontains configuration details of the WebSocket URL and the payment LNURL. Use the following steps to create such a file:
-
-1. Create an LNURLDevice in LNbits. Make sure that the type is 'Switch' and set the correct price. 
-2. Record the following data of the LNURLdevice
-  - id 
-  - LNURL
-  - hostname (the hostname of the server)
-3. Create a JSON file and store the data from the previous step. A sample file is shown below.
-```
-{
-    "host":"lnbits.meulenhoff.org",
-    "id":"8NTL78ERDsPkbRgrQsu39w",
-    "lnurl":"LNURL1DP68GURN8GHJ7MRWVF5HGUEWD4JH2MR9DE5X7ENX9EHHYEE0D3H82UNVV3JHV6TRV5HKZURF9AMRZTMVDE6HYMP08P89GNPH8PZ4Y3RN2P4KY5N8WFGHXAFN89MN7EMSD9HN6VFXWPEX7ENFWS7NQT33XGNXZMT0W4H8G0F3JTRVVM"
-}
-```
-The following parameters are included in the file:
- - `host` is the hostname of the LNbits server that provides the LNURLdevice. 
- - `id` is the identifier of the LNURLdevice (the value in the id column in LNbits).
- - `lnurl` is the LNURL of the LNURLdevice in LNbits. Click on the 'Eye' icon of the LNURLdevice to copy the LNURL.
-
-4. Store the file on a web location of your choice in the path '/.well-known/bliksembier/{device id}.json'. You are free to choose a 'device id', it is just a mnenomic that is entered on the configuration screen.
-5. Navigate to the URL to verify that the file is accessible
-```
-https://{config host}/.well-known/bliksembier/{device id}.json
-```
-6. On the tap device, go the config and enter the `config host` and `device id` where the file can be downloaded. The .json extension is not needed. 
+The basic configuration of the beertap is done through the userinterface of the device by clicking on the 'Config' button on the start screen. The default PIN for the config is '123456'.
 
 
+Take the following steps to configure the device:
 
+1. Create a wallet at https://lnbits.meulenhoff.org and add the LNURLdevice extension to the wallet. Other LNbits servers will not work.
+2. Create an LNURLDevice in LNbits. Add a 'Switch', set the correct price and the correct duration. You can add up to three distinct switches.
+3. Record the following data of the LNURLdevice (8 charachters).
+4. On the tap device, enter config. 
+  - Make sure that LNbits host is set to: lnbits.meulenhoff.org
+  - Set 'Device ID' to the ID of the LNURL device. 
+5. Click connect. 
+  
 
 ## Compilation
 
