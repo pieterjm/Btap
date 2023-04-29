@@ -20,7 +20,9 @@ void beerScreen();
 
 void beerStart();
 
-void connectBliksemBier(const char *ssid,const char *pwd, const char *deviceid,const char *configserver);
+void wantBierClicked(int item);
+
+void connectBliksemBier(const char *ssid,const char *pwd, const char *deviceid,const char *lnbitshost);
 
 void saveTuning(int32_t servoBack, int32_t servoClosed, int32_t servoOpen, int32_t tapDuration);
 
