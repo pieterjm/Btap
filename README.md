@@ -11,7 +11,7 @@ Take the following steps to configure the device:
 3. Configure the LNURLDevice, make sure that the type is set to 'Switch'.
 4. Add one or more (max three) switches by clicking on the '+' button. Configure price, duration and Label for each switch. 
   * The duration is the amount of milliseconds, the tap is switched on.
-  * The Label button is displayed on the tap. For instance 'Small' or 'Large'.
+  * The Label button is displayed on the tap. For instance 'SMALL' or 'LARGE'. Currently, only a limited subset of characters is support (CAPS ONLY).
 5. Click 'CREATE LNURLDEVICE' and record the ID of the LNURLdevice (8 charachters).
 6. On the tap device, enter config. 
   - Make sure that LNbits host is set to: lnbits.meulenhoff.org
