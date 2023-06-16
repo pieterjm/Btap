@@ -585,7 +585,8 @@ void ui_ScreenAbout_screen_init(void)
 
     ui_Image1 = lv_img_create(ui_ScreenAbout);
     //   lv_img_set_src(ui_Image1, &ui_img_kanhetal256_png);
-    lv_img_set_src(ui_Image1, &ui_img_1898_logo256_png);
+    //lv_img_set_src(ui_Image1, &ui_img_1898_logo256_png);
+    lv_img_set_src(ui_Image1, &ui_img_schafstall256_png);
     lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);   /// 256
     lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT);    /// 256
     lv_obj_set_y(ui_Image1, -50);
